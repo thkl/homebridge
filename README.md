@@ -106,6 +106,22 @@ Once your device has been added to HomeKit, you should be able to tell Siri to c
 
 One final thing to remember is that Siri will almost always prefer its default phrase handling over HomeKit devices. For instance, if you name your Sonos device "Radio" and try saying "Siri, turn on the Radio" then Siri will probably start playing an iTunes Radio station on your phone. Even if you name it "Sonos" and say "Siri, turn on the Sonos", Siri will probably just launch the Sonos app instead. This is why, for instance, the suggested `name` for the Sonos shim in `config-samples.json` is "Speakers".
 
+# Homematic Implementation
+
+Setup the Platform in your config.json like this
+
+{
+            "platform": "HomeMaticPlatform",
+            "name": "HomeMatic CCU",
+            "ccu_ip": "xxx.xxx.xxx.xxx",
+            "filter_device":[]
+            "filter_channel":[]
+}
+
+The Homematic Platform will read all Devices from your CCU. If you want to exclude some Devices, put the Device Serial Numbers into the filter Section like "filter_device":["LEQ:12334","LEQ98765"]. If you want to exclude only some Channels you have to name the complete Channelname including the Homematic Interface Name eg : BidCos-RF.LEQ:12334.1 ...
+
+Currently Switches, Thermostats, Window Contacts and Dimmers are supported.
+
 # Final Notes
 
 HomeKit is definitely amazing when it works. Speaking to Siri is often much quicker and easier than launching whatever app your device manufacturer provides.

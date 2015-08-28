@@ -19,7 +19,7 @@ function RegaRequest(log,ccuip) {
 RegaRequest.prototype = {
 
    script: function (script, callback) {
-   
+
      var post_options = {
             host: this.ccuIP,
             port: '80',
@@ -30,7 +30,7 @@ RegaRequest.prototype = {
                 'Content-Length': script.length
             }
         };
-        
+
         var post_req = http.request(post_options, function(res) {
             var data = "";
             res.setEncoding('utf8');
@@ -61,7 +61,7 @@ function HomeMaticPlatform(log, config) {
    this.ccuIP 	= config["ccu_ip"];
    this.filter_device  = config["filter_device"];
    this.filter_channel  = config["filter_channel"];
-   
+
    this.sendQueue = [];
    this.timer   = 0;
 }
@@ -72,28 +72,28 @@ HomeMaticPlatform.prototype = {
     this.log("Fetching Homematic devices...");
 	var that = this;
     var foundAccessories = [];
-    
+
     var script = "string sDeviceId;string sChannelId;boolean df = true;Write(\'{\"devices\":[\');foreach(sDeviceId, root.Devices().EnumIDs()){object oDevice = dom.GetObject(sDeviceId);if(oDevice){var oInterface = dom.GetObject(oDevice.Interface());if(df) {df = false;} else { Write(\',\');}Write(\'{\');Write(\'\"id\": \"\' # sDeviceId # \'\",\');Write(\'\"name\": \"\' # oDevice.Name() # \'\",\');Write(\'\"address\": \"\' # oDevice.Address() # \'\",\');Write(\'\"channels\": [\');boolean bcf = true;foreach(sChannelId, oDevice.Channels().EnumIDs()){object oChannel = dom.GetObject(sChannelId);if(bcf) {bcf = false;} else {Write(\',\');}Write(\'{\');Write(\'\"cId\": \' # sChannelId # \',\');Write(\'\"name\": \"\' # oChannel.Name() # \'\",\');if(oInterface){Write(\'\"address\": \"\' # oInterface.Name() #\'.'\ # oChannel.Address() # \'\",\')};Write(\'\"type\": \"\' # oChannel.HssType() # \'\"\');Write(\'}\');}Write(\']}\');}}Write(\']}\');";
-    
+
     var regarequest = new RegaRequest(this.log,this.ccuIP).script(script, function(data) {
                 var json  = JSON.parse(data);
 				if (json['devices'] != undefined) {
 				      json['devices'].map(function(device) {
 				            var isFiltered = false;
-				            
+
 				            if ((that.filter_device != undefined) && (that.filter_device.indexOf(device.address) > -1)) {
 				              isFiltered = true;
 				            } else {
 				              isFiltered = false;
 				            }
-				      
-				       
+
+
              				if ((device['channels'] != undefined) && (!isFiltered)) {
-             				
+
              				device['channels'].map(function(ch) {
 				            var isChannelFiltered = false;
-				            
-				            if ((that.filter_channel != undefined) && (that.filter_channel.indexOf(channel.address) > -1)) {
+
+				            if ((that.filter_channel != undefined) && (that.filter_channel.indexOf(ch.address) > -1)) {
 				              isChannelFiltered = true;
 				            } else {
 				              isChannelFiltered = false;
@@ -101,36 +101,36 @@ HomeMaticPlatform.prototype = {
 
              				  if ((ch.address != undefined) && (!isChannelFiltered)) {
              				   if (ch.type=="SWITCH") {
-             				    // Switch found 
+             				    // Switch found
               				    accessory = new HomeMaticSwitchChannel(that.log, that, ch.id , ch.name , ch.type , ch.address);
 				                foundAccessories.push(accessory);
              				   }
-             				  
+
              				   if (ch.type=="DIMMER") {
-             				    // Dimmer found 
+             				    // Dimmer found
               				    accessory = new HomeMaticDimmerChannel(that.log, that, ch.id , ch.name , ch.type , ch.address);
 				                foundAccessories.push(accessory);
              				   }
 
              				   if (ch.type=="CLIMATECONTROL_RT_TRANSCEIVER") {
-             				    // ThermoControl found 
+             				    // ThermoControl found
               				    accessory = new HomeMaticThermostatChannel(that.log, that, ch.id , ch.name , ch.type , ch.address);
 				                foundAccessories.push(accessory);
              				   }
 
              				   if (ch.type=="WEATHER") {
-             				    // ThermoControl found 
+             				    // ThermoControl found
               				    accessory = new HomeMaticWeatherChannel(that.log, that, ch.id , ch.name , ch.type , ch.address);
 				                foundAccessories.push(accessory);
              				   }
 
              				   if (ch.type=="SHUTTER_CONTACT") {
-             				    // ThermoControl found 
+             				    // ThermoControl found
               				    accessory = new HomeMaticContactChannel(that.log, that, ch.id , ch.name , ch.type , ch.address);
 				                foundAccessories.push(accessory);
              				   }
-             				   
-             				   
+
+
 
 							 } else {
 							   that.log(device.name + " has no address");
@@ -141,19 +141,19 @@ HomeMaticPlatform.prototype = {
              		      that.log(device.name + " has no channels or is filtered");
              		     }
           			  });
-				 callback(foundAccessories);             
+				 callback(foundAccessories);
 				} else {
-				 callback(foundAccessories);             
+				 callback(foundAccessories);
 				}
-    });      
+    });
   },
-  
+
   prepareRequest: function(accessory,script) {
     var that = this;
     this.sendQueue.push(script);
     that.delayed(100);
   },
-  
+
   sendPreparedRequests: function() {
     var that = this;
     var script = "var d;";
@@ -165,7 +165,7 @@ HomeMaticPlatform.prototype = {
 
     });
   },
-  
+
   sendRequest: function(accessory,script,callback) {
     var that = this;
     var regarequest = new RegaRequest(this.log,this.ccuIP).script(script, function(data) {
@@ -176,7 +176,7 @@ HomeMaticPlatform.prototype = {
      }
     });
   },
-  
+
   delayed: function(delay) {
     var timer = this.delayed[delay];
     if( timer ) {

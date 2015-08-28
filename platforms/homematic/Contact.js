@@ -120,7 +120,7 @@ HomeMaticContactChannel.prototype = {
           });
           
       },
-      perms: ["pr","ev"],
+      perms: ["pr"],
       format: "bool",
       initialValue: 0,
       supportEvents: false,

@@ -116,7 +116,7 @@ HomeMaticDimmerChannel.prototype = {
             that.setBrightness((value==true) ? 1 : 0)
         },
         
-        perms: ["pw","pr","ev"],
+        perms: ["pw","pr"],
         format: "bool",
         initialValue: (that.state > 0) ? 1 : 0 ,
         supportEvents: false,
@@ -129,7 +129,7 @@ HomeMaticDimmerChannel.prototype = {
         onUpdate: function(value) {
           that.setBrightness(value/100);
         },
-        perms: ["pw","pr","ev"],
+        perms: ["pw","pr"],
         format: "int",
         initialValue: that.state,
         supportEvents: false,

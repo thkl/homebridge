@@ -106,7 +106,7 @@ HomeMaticSwitchChannel.prototype = {
             that.command(value)
         },
         
-        perms: ["pw","pr","ev"],
+        perms: ["pw","pr"],
         format: "bool",
         initialValue: that.state,
         supportEvents: false,

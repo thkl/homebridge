@@ -131,7 +131,7 @@ HomeMaticThermostatChannel.prototype = {
 {
       cType: types.CURRENTHEATINGCOOLING_CTYPE,
       onUpdate: function(value) { console.log("Change:",value); execute("Thermostat", "Current HC", value); },
-      perms: ["pr","ev"],
+      perms: ["pr"],
       format: "int",
       initialValue: 1,
       supportEvents: false,
@@ -147,7 +147,7 @@ HomeMaticThermostatChannel.prototype = {
       onUpdate: function(value) { 
       
       },
-      perms: ["pw","pr","ev"],
+      perms: ["pw","pr"],
       format: "int",
       initialValue: 1,
       supportEvents: false,
@@ -166,7 +166,7 @@ HomeMaticThermostatChannel.prototype = {
           });
           
       },
-      perms: ["pr","ev"],
+      perms: ["pr"],
       format: "int",
       initialValue: 20,
       supportEvents: false,
@@ -185,7 +185,7 @@ HomeMaticThermostatChannel.prototype = {
           });
           
       },
-      perms: ["pw","pr","ev"],
+      perms: ["pw","pr"],
       format: "int",
       initialValue: 20,
       supportEvents: false,
@@ -195,16 +195,19 @@ HomeMaticThermostatChannel.prototype = {
       designedMaxValue: 38,
       designedMinStep: 1,
       unit: "celsius"
-    },{
+    },
+    {
       cType: types.TEMPERATURE_UNITS_CTYPE,
-      onUpdate: function(value) { console.log("Change:",value); execute("Thermostat", "Unit", value); },
-      perms: ["pr","ev"],
+      onRead: null,
+      perms: ["pr"],
       format: "int",
       initialValue: 0,
       supportEvents: false,
       supportBonjour: false,
-      manfDescription: "Unit"
-    })
+      manfDescription: "Current Temperature",
+      unit: "celsius"
+    }
+    )
     
 
     return cTypes

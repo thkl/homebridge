@@ -118,22 +118,15 @@ HomeMaticWeatherChannel.prototype = {
           });
           
       },
-      perms: ["pr","ev"],
+      perms: ["pr"],
       format: "int",
       initialValue: 20,
       supportEvents: false,
       supportBonjour: false,
       manfDescription: "Current Temperature",
       unit: "celsius"
-    },{
-      cType: types.TEMPERATURE_UNITS_CTYPE,
-      perms: ["pr","ev"],
-      format: "int",
-      initialValue: 0,
-      supportEvents: false,
-      supportBonjour: false,
-      manfDescription: "Unit"
-    },{
+    },
+    {
       cType: types.CURRENT_RELATIVE_HUMIDITY_CTYPE,
       onRead: function(callback) {
           
@@ -142,13 +135,24 @@ HomeMaticWeatherChannel.prototype = {
           });
           
       },
-      perms: ["pr","ev"],
+      perms: ["pr"],
       format: "int",
       initialValue: 20,
       supportEvents: false,
       supportBonjour: false,
       manfDescription: "Current Humidity",
       unit: "%"
+    },
+    {
+      cType: types.TEMPERATURE_UNITS_CTYPE,
+      onRead: null,
+      perms: ["pr"],
+      format: "int",
+      initialValue: 0,
+      supportEvents: false,
+      supportBonjour: false,
+      manfDescription: "Current Temperature",
+      unit: "celsius"
     }
     
     

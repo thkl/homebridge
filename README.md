@@ -54,7 +54,7 @@ You'll also need some patience, as Siri can be very strict about sentence struct
 
 OK, if you're still excited enough about ordering Siri to make your coffee (which, who wouldn't be!) then here's how to set things up. First, clone this repo:
 
-    $ git clone https://github.com/nfarina/homebridge.git
+    $ git clone https://github.com/thkl/homebridge.git
     $ cd homebridge
     $ npm install
 

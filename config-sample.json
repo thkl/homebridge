@@ -5,7 +5,7 @@
         "port": 51826,
         "pin": "031-45-154"
     },
-
+    
     "description": "This is an example configuration file with all supported devices. You can use this as a template for creating your own configuration file containing devices you actually own.",
 
     "platforms": [
@@ -68,12 +68,21 @@
         {
             "platform": "YamahaAVR",
             "play_volume": -35,
-            "setMainInputTo": "AirPlay"
+            "setMainInputTo": "AirPlay" 
+        },
+        
+		{  // You have to create an private Application here : https://dev.netatmo.com to get clientID and clientSecret
+            "platform": "Netatmo",
+            "name": "NetAtmo",
+            "clientId": "",
+            "clientSecret": "",
+            "username": "",
+            "password": ""
         },
         {
             "platform": "HomeMaticPlatform",
             "name": "HomeMatic CCU",
-            "ccu_ip": "192.168.1.8",
+            "ccu_ip": "192.168.1.1",
             "filter_device":[],
             "filter_channel":[]
         }
@@ -171,7 +180,7 @@
             "accessory": "Hyperion",
             "name": "TV Backlight",
             "description": "Control the Hyperion TV backlight server. https://github.com/tvdzwan/hyperion"
-            "host": "localhost",
+            "host": "localhost", 
             "port": "19444"
         }
     ]

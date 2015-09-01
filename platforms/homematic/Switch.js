@@ -22,11 +22,10 @@ HomeMaticSwitchChannel.prototype = {
   },
 
   command: function(c,value) {
-    this.log(this.name + " sending command " + c);
 	// SEnd COmmand
 	var that = this;
 	var script = "d=dom.GetObject(\'"+ that.adress + ".STATE\');if (d) {d.State("+c+");}\n";
-	that.platform.prepareRequest(that,script);
+	   that.platform.prepareRequest(that,script);
   },
 
 
@@ -105,7 +104,7 @@ HomeMaticSwitchChannel.prototype = {
         onUpdate: function(value) {
             that.command(value)
         },
-        
+
         perms: ["pw","pr"],
         format: "bool",
         initialValue: that.state,
@@ -114,7 +113,7 @@ HomeMaticSwitchChannel.prototype = {
         manfDescription: "Change the power state",
         designedMaxLength: 1
       })
-    
+
 
     return cTypes
   },

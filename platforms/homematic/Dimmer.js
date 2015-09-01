@@ -32,12 +32,11 @@ HomeMaticDimmerChannel.prototype = {
   },
 
   setBrightness: function(value) {
-    this.log(this.name + " sending dim command to" + value);
 	// SEnd COmmand
 	var that = this;
 
 	var script = "d=dom.GetObject(\'"+ that.adress + ".LEVEL\');if(d){d.State("+value+");}\n";
-	that.platform.prepareRequest(that,script);
+	   that.platform.prepareRequest(that,script);
   },
 
 
@@ -115,7 +114,7 @@ HomeMaticDimmerChannel.prototype = {
         onUpdate: function(value) {
             that.setBrightness((value==true) ? 1 : 0)
         },
-        
+
         perms: ["pw","pr"],
         format: "bool",
         initialValue: (that.state > 0) ? 1 : 0 ,
@@ -141,7 +140,7 @@ HomeMaticDimmerChannel.prototype = {
         unit: "%"
       }
       )
-    
+
 
     return cTypes
   },

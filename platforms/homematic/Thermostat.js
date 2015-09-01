@@ -35,19 +35,18 @@ HomeMaticThermostatChannel.prototype = {
 
 
   command: function(mode,dp,value,callback) {
-    this.log(this.name + " sending command " + dp + " " + value);
-	// SEnd COmmand
+  // SEnd COmmand
 	var that = this;
 	if (mode == "set") {
 		var script = "d=dom.GetObject(\'"+ that.adress + "."+dp+"\');if (d) {d.State("+value+");}\n";
 		that.platform.prepareRequest(that,script);
 	}
-	
+
     if (mode == "get") {
-		var script = "var d=dom.GetObject(\'"+ that.adress + "."+dp+"\');if (d) {Write(\'{\"value\":\'#d.State()#\'}\');}\n";
+		var script = "var d=dom.GetObject(\'"+ that.adress + "."+dp+"\');if (d) {Write(\'{\"value\":\'#d.State()#\'}\');} else {Write(\'{}\');}\n";
 		this.log ("Script :" + script);
 		that.platform.sendRequest(that,script, function(json){
-		  if (json['value'] != undefined) {
+		   if ((json!=undefined) && (json['value'] != undefined)) {
 		   callback(json['value']);
 		  }
 		});
@@ -140,12 +139,12 @@ HomeMaticThermostatChannel.prototype = {
       designedMaxLength: 1,
       designedMinValue: 1,
       designedMaxValue: 1,
-      designedMinStep: 1,    
+      designedMinStep: 1,
     },
     {
       cType: types.TARGETHEATINGCOOLING_CTYPE,
-      onUpdate: function(value) { 
-      
+      onUpdate: function(value) {
+
       },
       perms: ["pw","pr"],
       format: "int",
@@ -160,11 +159,11 @@ HomeMaticThermostatChannel.prototype = {
     {
       cType: types.CURRENT_TEMPERATURE_CTYPE,
       onRead: function(callback) {
-          
+
           that.command("get","ACTUAL_TEMPERATURE","",function(newValue){
            callback(newValue);
           });
-          
+
       },
       perms: ["pr"],
       format: "int",
@@ -179,11 +178,11 @@ HomeMaticThermostatChannel.prototype = {
             that.delayed("SET_TEMPERATURE",value,500);
       },
       onRead: function(callback) {
-          
+
           that.command("get","SET_TEMPERATURE","",function(newValue){
            callback(newValue);
           });
-          
+
       },
       perms: ["pw","pr"],
       format: "int",
@@ -208,7 +207,7 @@ HomeMaticThermostatChannel.prototype = {
       unit: "celsius"
     }
     )
-    
+
 
     return cTypes
   },

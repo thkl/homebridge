@@ -24,12 +24,12 @@ HomeMaticContactChannel.prototype = {
     this.log(this.name + " sending command " + dp + " " + value);
 	// SEnd COmmand
 	var that = this;
-	
+
     if (mode == "get") {
-		var script = "var d=dom.GetObject(\'"+ that.adress + "."+dp+"\');if (d) {Write(\'{\"value\":\'#d.State()#\'}\');}\n";
+		var script = "var d=dom.GetObject(\'"+ that.adress + "."+dp+"\');if (d) {Write(\'{\"value\":\'#d.State()#\'}\');} else {Write(\'{}\');}\n";
 		this.log ("Script :" + script);
 		that.platform.sendRequest(that,script, function(json){
-		  if (json['value'] != undefined) {
+      if ((json!=undefined) && (json['value'] != undefined)) {
 		   callback(json['value']);
 		  }
 		});
@@ -114,11 +114,11 @@ HomeMaticContactChannel.prototype = {
     {
       cType: types.CONTACT_SENSOR_STATE_CTYPE,
       onRead: function(callback) {
-          
+
           that.command("get","STATE","",function(newValue){
            callback(newValue);
           });
-          
+
       },
       perms: ["pr"],
       format: "bool",
@@ -147,5 +147,3 @@ HomeMaticContactChannel.prototype = {
 };
 
 module.exports = HomeMaticContactChannel;
-
-

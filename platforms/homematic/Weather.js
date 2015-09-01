@@ -19,15 +19,14 @@ HomeMaticWeatherChannel.prototype = {
 
 
   command: function(mode,dp,value,callback) {
-    this.log(this.name + " sending command " + dp + " " + value);
-	// SEnd COmmand
+  // SEnd COmmand
 	var that = this;
-	
+
     if (mode == "get") {
-		var script = "var d=dom.GetObject(\'"+ that.adress + "."+dp+"\');if (d) {Write(\'{\"value\":\'#d.State()#\'}\');}\n";
-		this.log ("Script :" + script);
+    // Issue 02 - Make sure that we returned a valid  json even there is no datapoint to fetch value from
+		var script = "var d=dom.GetObject(\'"+ that.adress + "."+dp+"\');if (d) {Write(\'{\"value\":\'#d.State()#\'}\');} else {Write(\'{}\');}\n";
 		that.platform.sendRequest(that,script, function(json){
-		  if (json['value'] != undefined) {
+		  if ((json!=undefined) && (json['value'] != undefined)) {
 		   callback(json['value']);
 		  }
 		});
@@ -112,11 +111,11 @@ HomeMaticWeatherChannel.prototype = {
     {
       cType: types.CURRENT_TEMPERATURE_CTYPE,
       onRead: function(callback) {
-          
+
           that.command("get","TEMPERATURE","",function(newValue){
            callback(newValue);
           });
-          
+
       },
       perms: ["pr"],
       format: "int",
@@ -129,11 +128,11 @@ HomeMaticWeatherChannel.prototype = {
     {
       cType: types.CURRENT_RELATIVE_HUMIDITY_CTYPE,
       onRead: function(callback) {
-          
+
           that.command("get","HUMIDITY","",function(newValue){
            callback(newValue);
           });
-          
+
       },
       perms: ["pr"],
       format: "int",
@@ -154,10 +153,10 @@ HomeMaticWeatherChannel.prototype = {
       manfDescription: "Current Temperature",
       unit: "celsius"
     }
-    
-    
-    
-    
+
+
+
+
     );
     return cTypes
   },
@@ -179,5 +178,3 @@ HomeMaticWeatherChannel.prototype = {
 };
 
 module.exports = HomeMaticWeatherChannel;
-
-

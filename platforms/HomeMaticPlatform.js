@@ -170,8 +170,12 @@ HomeMaticPlatform.prototype = {
     var that = this;
     var regarequest = new RegaRequest(this.log,this.ccuIP).script(script, function(data) {
      if (data != undefined) {
-       var json  = JSON.parse(data);
-       callback(json);
+       try {
+         var json  = JSON.parse(data);
+         callback(json);
+       } catch (err) {
+         callback(undefined);
+       }
        return;
      }
     });

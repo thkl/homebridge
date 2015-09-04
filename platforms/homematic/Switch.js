@@ -21,13 +21,40 @@ HomeMaticSwitchChannel.prototype = {
     return "false";
   },
 
-  command: function(c,value) {
-	// SEnd COmmand
-	var that = this;
-	var script = "d=dom.GetObject(\'"+ that.adress + ".STATE\');if (d) {d.State("+c+");}\n";
-	   that.platform.prepareRequest(that,script);
+  delayed: function(mode,dp,value,delay) {
+    var timer = this.delayed[delay];
+    if( timer ) {
+      clearTimeout( timer );
+    }
+
+    this.log(this.name + " delaying command "+mode+" with value " + value);
+    var that = this;
+    this.delayed[delay] = setTimeout( function(){clearTimeout(that.delayed[delay]);that.command(mode,dp,value)}, delay?delay:100 );
   },
 
+  command: function(mode,dp,value,callback) {
+  // SEnd COmmand
+	var that = this;
+
+    if (mode == "get") {
+    // Issue 02 - Make sure that we returned a valid  json even there is no datapoint to fetch value from
+		var script = "var d=dom.GetObject(\'"+ that.adress + "."+dp+"\');if (d) {Write(\'{\"value\":\'#d.State()#\'}\');} else {Write(\'{}\');}\n";
+		that.platform.sendRequest(that,script, function(json){
+		  if ((json!=undefined) && (json['value'] != undefined)) {
+		   that.log("Request Power State. Value is " + json['value']);
+		   callback(json['value']);
+		  }
+		});
+	}
+
+
+    if (mode == "set") {
+		var script = "var d=dom.GetObject(\'"+ that.adress + "."+dp+"\');if (d) {d.State("+value+");}\n";
+		that.platform.sendRequest(that,script, function(json){
+
+		});
+	}
+  },
 
 
   informationCharacteristics: function() {
@@ -102,9 +129,16 @@ HomeMaticSwitchChannel.prototype = {
       cTypes.push({
         cType: types.POWER_STATE_CTYPE,
         onUpdate: function(value) {
-            that.command(value)
+            that.command("set","STATE" , (value==true) ? 1 : 0)
         },
 
+        onRead: function(callback) {
+
+          that.command("get","STATE","",function(newValue){
+           callback(newValue);
+          });
+
+        },
         perms: ["pw","pr"],
         format: "bool",
         initialValue: that.state,

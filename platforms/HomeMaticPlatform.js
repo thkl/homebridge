@@ -114,7 +114,7 @@ HomeMaticPlatform.prototype = {
              				   }
 
              				   if (ch.type=="BLIND") {
-             				    // Dimmer found
+             				    // Blind found
               				    accessory = new HomeMaticBlindChannel(that.log, that, ch.id , ch.name , ch.type , ch.address);
 				                foundAccessories.push(accessory);
              				   }

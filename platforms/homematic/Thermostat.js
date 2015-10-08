@@ -43,7 +43,7 @@ HomeMaticThermostatChannel.prototype = {
 	}
 
     if (mode == "get") {
-		var script = "var d=dom.GetObject(\'"+ that.adress + "."+dp+"\');if (d) {Write(\'{\"value\":\'#d.State()#\'}\');} else {Write(\'{}\');}\n";
+		var script = "var d=dom.GetObject(\'"+ that.adress + "."+dp+"\');if (d) {Write(\'{\"value\":\'#d.Value()#\'}\');} else {Write(\'{}\');}\n";
 		this.log ("Script :" + script);
 		that.platform.sendRequest(that,script, function(json){
 		   if ((json!=undefined) && (json['value'] != undefined)) {

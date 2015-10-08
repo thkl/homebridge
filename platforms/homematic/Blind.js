@@ -1,16 +1,16 @@
-
-
 var types = require("HAP-NodeJS/accessories/types.js");
 
-function HomeMaticContactChannel (log,platform, id ,name, type ,adress) {
-  	this.name     = name;
-  	this.type     = type;
-  	this.adress   = adress;
-  	this.log      = log;
-  	this.platform = platform;
+function HomeMaticBlindChannel(log,platform, id ,name, type ,adress) {
+  this.name     = name;
+  this.type     = type;
+  this.adress   = adress;
+  this.log      = log;
+  this.platform = platform;
+  this.state    = 0;
 }
 
-HomeMaticContactChannel.prototype = {
+
+HomeMaticBlindChannel.prototype = {
 
 
  // Return current States
@@ -20,23 +20,41 @@ HomeMaticContactChannel.prototype = {
   },
 
 
+  delayed: function(mode,dp,value,delay) {
+    var timer = this.delayed[delay];
+    if( timer ) {
+      clearTimeout( timer );
+    }
+
+    this.log(this.name + " delaying command "+mode+" with value " + value);
+    var that = this;
+    this.delayed[delay] = setTimeout( function(){clearTimeout(that.delayed[delay]);that.command(mode,dp,value)}, delay?delay:100 );
+  },
+
   command: function(mode,dp,value,callback) {
-    this.log(this.name + " sending command " + dp + " " + value);
-	// SEnd COmmand
+  // SEnd COmmand
 	var that = this;
 
     if (mode == "get") {
+    // Issue 02 - Make sure that we returned a valid  json even there is no datapoint to fetch value from
 		var script = "var d=dom.GetObject(\'"+ that.adress + "."+dp+"\');if (d) {Write(\'{\"value\":\'#d.Value()#\'}\');} else {Write(\'{}\');}\n";
-		this.log ("Script :" + script);
 		that.platform.sendRequest(that,script, function(json){
-      if ((json!=undefined) && (json['value'] != undefined)) {
+		  if ((json!=undefined) && (json['value'] != undefined)) {
+		   that.log("Request Power State. Value is " + json['value']);
 		   callback(json['value']);
 		  }
 		});
 	}
 
 
+    if (mode == "set") {
+		var script = "var d=dom.GetObject(\'"+ that.adress + "."+dp+"\');if (d) {d.State("+value+");}\n";
+		that.platform.sendRequest(that,script, function(json){
+
+		});
+	}
   },
+
 
 
 
@@ -97,9 +115,7 @@ HomeMaticContactChannel.prototype = {
   },
 
   controlCharacteristics: function(that) {
-    cTypes = [];
-
-    cTypes.push({
+    cTypes = [{
       cType: types.NAME_CTYPE,
       onUpdate: null,
       perms: ["pr"],
@@ -109,27 +125,63 @@ HomeMaticContactChannel.prototype = {
       supportBonjour: false,
       manfDescription: "Name of service",
       designedMaxLength: 255
-    },
+    }]
 
-    {
-      cType: types.CONTACT_SENSOR_STATE_CTYPE,
-      onRead: function(callback) {
+      cTypes.push({
+        cType: types.WINDOW_COVERING_CURRENT_POSITION_CTYPE,
+        onRead: function(callback) {
 
-          that.command("get","STATE","",function(newValue){
-           callback(newValue);
+          that.command("get","LEVEL","",function(newValue){
+           callback(newValue*100);
           });
 
+        },
+        
+        perms: ["pw","pr"],
+        format: "int",
+        initialValue: that.state,
+        supportEvents: false,
+        supportBonjour: false,
+        manfDescription: "Current Position",
+        designedMinValue: 0,
+        designedMaxValue: 100,
+        designedMinStep: 1,
+        unit: "%"
       },
-      perms: ["pr"],
-      format: "bool",
-      initialValue: 0,
-      supportEvents: false,
-      supportBonjour: false,
-      manfDescription: "Current State"
-    });
+      {
+        cType: types.WINDOW_COVERING_TARGET_POSITION_CTYPE,
+        onUpdate: function(value) {
+          that.delayed("set","LEVEL" , value/100,100);
+        },
+        
+        onRead: function(callback) {
+
+          that.command("get","LEVEL","",function(newValue){
+           callback(newValue*100);
+          });
+
+        },
+        
+        perms: ["pw","pr"],
+        format: "int",
+        initialValue: that.state,
+        supportEvents: false,
+        supportBonjour: false,
+        manfDescription: "Adjust Position of the Blind",
+        designedMinValue: 0,
+        designedMaxValue: 100,
+        designedMinStep: 1,
+        unit: "%"
+      }
+      )
+
+
     return cTypes
   },
 
+  sType: function() {
+      return types.WINDOW_COVERING_STYPE
+  },
 
   getServices: function() {
     var that = this;
@@ -138,7 +190,7 @@ HomeMaticContactChannel.prototype = {
       characteristics: this.informationCharacteristics(),
     },
     {
-      sType: types.CONTACT_SENSOR_STYPE ,
+      sType: this.sType(),
       characteristics: this.controlCharacteristics(that)
     }];
     this.log("Loaded services for " + this.name)
@@ -146,4 +198,4 @@ HomeMaticContactChannel.prototype = {
   }
 };
 
-module.exports = HomeMaticContactChannel;
+module.exports = HomeMaticBlindChannel;

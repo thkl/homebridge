@@ -9,6 +9,7 @@ var HomeMaticDimmerChannel = require(path.resolve(__dirname, 'homematic/Dimmer.j
 var HomeMaticSwitchChannel = require(path.resolve(__dirname, 'homematic/Switch.js'));
 var HomeMaticThermostatChannel = require(path.resolve(__dirname, 'homematic/Thermostat.js'));
 var HomeMaticContactChannel = require(path.resolve(__dirname, 'homematic/Contact.js'));
+var HomeMaticBlindChannel = require(path.resolve(__dirname, 'homematic/Blind.js'));
 
 
 function RegaRequest(log,ccuip) {
@@ -109,6 +110,12 @@ HomeMaticPlatform.prototype = {
              				   if (ch.type=="DIMMER") {
              				    // Dimmer found
               				    accessory = new HomeMaticDimmerChannel(that.log, that, ch.id , ch.name , ch.type , ch.address);
+				                foundAccessories.push(accessory);
+             				   }
+
+             				   if (ch.type=="BLIND") {
+             				    // Dimmer found
+              				    accessory = new HomeMaticBlindChannel(that.log, that, ch.id , ch.name , ch.type , ch.address);
 				                foundAccessories.push(accessory);
              				   }
 

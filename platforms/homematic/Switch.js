@@ -38,7 +38,7 @@ HomeMaticSwitchChannel.prototype = {
 
     if (mode == "get") {
     // Issue 02 - Make sure that we returned a valid  json even there is no datapoint to fetch value from
-		var script = "var d=dom.GetObject(\'"+ that.adress + "."+dp+"\');if (d) {Write(\'{\"value\":\'#d.State()#\'}\');} else {Write(\'{}\');}\n";
+		var script = "var d=dom.GetObject(\'"+ that.adress + "."+dp+"\');if (d) {Write(\'{\"value\":\'#d.Value()#\'}\');} else {Write(\'{}\');}\n";
 		that.platform.sendRequest(that,script, function(json){
 		  if ((json!=undefined) && (json['value'] != undefined)) {
 		   that.log("Request Power State. Value is " + json['value']);

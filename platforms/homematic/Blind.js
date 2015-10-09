@@ -137,7 +137,7 @@ HomeMaticBlindChannel.prototype = {
 
         },
         
-        perms: ["pw","pr"],
+        perms: ["pr"],
         format: "int",
         initialValue: that.state,
         supportEvents: false,
@@ -148,6 +148,8 @@ HomeMaticBlindChannel.prototype = {
         designedMinStep: 1,
         unit: "%"
       },
+      
+      
       {
         cType: types.WINDOW_COVERING_TARGET_POSITION_CTYPE,
         onUpdate: function(value) {
@@ -172,7 +174,31 @@ HomeMaticBlindChannel.prototype = {
         designedMaxValue: 100,
         designedMinStep: 1,
         unit: "%"
+      },
+      
+       {
+        cType: types.WINDOW_COVERING_OPERATION_STATE_CTYPE,
+                
+        onRead: function(callback) {
+
+          that.command("get","WORKING","",function(newValue){
+           callback(newValue);
+          });
+
+        },
+        
+        perms: ["pr"],
+        format: "int",
+        initialValue: that.state,
+        supportEvents: false,
+        supportBonjour: false,
+        manfDescription: "Operating State",
+        designedMinValue: 0,
+        designedMaxValue: 1,
+        designedMinStep: 1
       }
+
+
       )
 
 

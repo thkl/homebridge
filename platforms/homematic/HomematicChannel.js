@@ -185,6 +185,7 @@ HomeMaticGenericChannel.prototype = {
         onRegister: function(characteristic) { 
             that.currentStateCharacteristic["STATE"] = characteristic;
             characteristic.eventEnabled = true;
+            that.remoteGetValue("STATE");
         },
              
         perms: ["pw","pr","ev"],
@@ -229,6 +230,7 @@ HomeMaticGenericChannel.prototype = {
         onRegister: function(characteristic) { 
             that.currentStateCharacteristic["LEVEL"] = characteristic;
             characteristic.eventEnabled = true;
+            that.remoteGetValue("LEVEL");
         },
         
         perms: ["pw","pr","ev"],
@@ -252,6 +254,7 @@ HomeMaticGenericChannel.prototype = {
         onRegister: function(characteristic) { 
             that.currentStateCharacteristic["LEVEL"] = characteristic;
             characteristic.eventEnabled = true;
+            that.remoteGetValue("LEVEL");
         },
 
         
@@ -283,6 +286,7 @@ HomeMaticGenericChannel.prototype = {
         onRegister: function(characteristic) { 
             that.currentStateCharacteristic["LEVEL"] = characteristic;
             characteristic.eventEnabled = true;
+            that.remoteGetValue("LEVEL");
         },
 
         
@@ -314,6 +318,7 @@ HomeMaticGenericChannel.prototype = {
         onRegister: function(characteristic) { 
             that.currentStateCharacteristic["STATE"] = characteristic;
             characteristic.eventEnabled = true;
+            that.remoteGetValue("STATE");
         },
       
       perms: ["pr"],
@@ -355,6 +360,7 @@ HomeMaticGenericChannel.prototype = {
       onRegister: function(characteristic) { 
             that.currentStateCharacteristic["ACTUAL_TEMPERATURE"] = characteristic;
             characteristic.eventEnabled = true;
+            that.remoteGetValue("ACTUAL_TEMPERATURE");
       },
       perms: ["pw","pr","ev"], perms: ["pr"],format: "double",
       initialValue: that.dpvalue("ACTUAL_TEMPERATURE",20),

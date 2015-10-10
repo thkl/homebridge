@@ -204,7 +204,7 @@ HomeMaticGenericChannel.prototype = {
           onRead: function(callback) {
            callback(true);
           },
-        perms: ["pr"],
+        perms: ["pr","ev"],
         format: "bool",
         initialValue: true,
         supportEvents: false,
@@ -307,10 +307,7 @@ HomeMaticGenericChannel.prototype = {
 	 cTypes.push(
 	 {  
 	 	cType: types.CONTACT_SENSOR_STATE_CTYPE,
-             onUpdate: function(value) {
-            that.command("set","STATE" , (value==1)?true:false)
-        },
-
+            
         onRead: function(callback) {
             that.query("STATE",callback);
         },
@@ -321,16 +318,40 @@ HomeMaticGenericChannel.prototype = {
             that.remoteGetValue("STATE");
         },
       
-      perms: ["pr"],
+      perms: ["pr","ev"],
       format: "bool",
-      initialValue: 0,
+      initialValue: that.dpvalue("STATE",0),
       supportEvents: false,
       supportBonjour: false,
       manfDescription: "Current State"
 	 });
 	}
-    
-    if (this.type=="CLIMATECONTROL_RT_TRANSCEIVER") {
+	
+	if (this.type=="MOTION_DETECTOR") { 
+	 cTypes.push(
+	 {  
+	 	cType: types.MOTION_DETECTED_CTYPE,
+         
+        onRead: function(callback) {
+            that.query("MOTION",callback);
+        },
+        
+        onRegister: function(characteristic) { 
+            that.currentStateCharacteristic["MOTION"] = characteristic;
+            characteristic.eventEnabled = true;
+            that.remoteGetValue("MOTION");
+        },
+      
+      perms: ["pr","ev"],
+      format: "bool",
+      initialValue: that.dpvalue("MOTION",0),
+      supportEvents: false,
+      supportBonjour: false,
+      manfDescription: "Current Motion State"
+	 });
+	}
+	
+	if (this.type=="CLIMATECONTROL_RT_TRANSCEIVER") {
     
     cTypes.push({
       cType: types.NAME_CTYPE,onUpdate: null,perms: ["pr"],format: "string",
@@ -374,10 +395,12 @@ HomeMaticGenericChannel.prototype = {
       },
       onRead: function(callback) {
 			that.query("SET_TEMPERATURE",callback);
+			
       },
       onRegister: function(characteristic) { 
             that.currentStateCharacteristic["SET_TEMPERATURE"] = characteristic;
             characteristic.eventEnabled = true;
+            that.remoteGetValue("SET_TEMPERATURE");
       },
       perms: ["pw","pr","ev"],format: "double",
       initialValue: that.dpvalue("SET_TEMPERATURE",16),
@@ -421,8 +444,12 @@ HomeMaticGenericChannel.prototype = {
       return types.THERMOSTAT_STYPE;
 	}
 	
-	 if (this.type=="SHUTTER_CONTACT") { 
+	if (this.type=="SHUTTER_CONTACT") { 
       return types.CONTACT_SENSOR_STYPE;
+	}
+	
+	if (this.type=="MOTION_DETECTOR") {
+	  return types.MOTION_SENSOR_STYPE
 	}
 	
   },

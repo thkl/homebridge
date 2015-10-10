@@ -123,7 +123,7 @@ HomematicRPC.prototype= {
        			var datapoint = params[2];
        			var value = params[3];
 	    			that.platform.foundAccessories.map(function(accessory){
-					if (accessory.adress == channel) {
+	    			if (accessory.adress == channel) {
 				  		accessory.event(datapoint,value);
 					}
 		 		});
@@ -272,7 +272,9 @@ HomeMaticPlatform.prototype = {
              				  
  								
 								if ((ch.type=="SWITCH") || (ch.type=="BLIND") || (ch.type=="SHUTTER_CONTACT")
-								 || (ch.type=="DIMMER") || (ch.type=="CLIMATECONTROL_RT_TRANSCEIVER")){
+								 || (ch.type=="DIMMER") || (ch.type=="CLIMATECONTROL_RT_TRANSCEIVER")
+								 || (ch.type=="MOTION_DETECTOR")
+								 ) {
              				    // Switch found
               				    accessory = new HomeMaticGenericChannel(that.log, that, ch.id , ch.name , ch.type , ch.address);
 				                that.foundAccessories.push(accessory);

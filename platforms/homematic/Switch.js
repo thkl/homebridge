@@ -1,12 +1,13 @@
 var types = require("HAP-NodeJS/accessories/types.js");
 
-function HomeMaticSwitchChannel(log,platform, id ,name, type ,adress) {
+function HomeMaticSwitchChannel(log,platform, id ,name, type ,adress,outlet) {
   this.name     = name;
   this.type     = type;
   this.adress   = adress;
   this.log      = log;
   this.platform = platform;
   this.state    = 0;
+  this.outlet   = outlet;
 }
 
 
@@ -148,12 +149,33 @@ HomeMaticSwitchChannel.prototype = {
         designedMaxLength: 1
       })
 
+	// Add is in Use Characteristics
+    if (this.outlet == true) {
+	cTypes.push({
+        cType: types.OUTLET_IN_USE_CTYPE,
+               
+        onRead: function(callback) {
+           callback(true);
+        },
+        perms: ["pr"],
+        format: "bool",
+        initialValue: true,
+        supportEvents: false,
+        supportBonjour: false,
+        manfDescription: "Is Outlet in Use",
+        designedMaxLength: 1
+      })
+	}  
 
     return cTypes
   },
 
   sType: function() {
+    if (this.outlet == true) {
+      return types.OUTLET_STYPE
+    } else {
       return types.LIGHTBULB_STYPE
+    }
   },
 
   getServices: function() {

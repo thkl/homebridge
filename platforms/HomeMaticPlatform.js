@@ -62,7 +62,7 @@ function HomeMaticPlatform(log, config) {
    this.ccuIP 	= config["ccu_ip"];
    this.filter_device  = config["filter_device"];
    this.filter_channel  = config["filter_channel"];
-
+   this.outlets = config["outlets"];
    this.sendQueue = [];
    this.timer   = 0;
 }
@@ -103,7 +103,10 @@ HomeMaticPlatform.prototype = {
              				  if ((ch.address != undefined) && (!isChannelFiltered)) {
              				   if (ch.type=="SWITCH") {
              				    // Switch found
-              				    accessory = new HomeMaticSwitchChannel(that.log, that, ch.id , ch.name , ch.type , ch.address);
+             				    
+             				    // Check if marked as Outlet
+             				    var outlet = (that.outlets.indexOf(ch.address) > -1)
+              				    accessory = new HomeMaticSwitchChannel(that.log, that, ch.id , ch.name , ch.type , ch.address,outlet);
 				                foundAccessories.push(accessory);
              				   }
 

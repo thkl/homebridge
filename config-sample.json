@@ -84,7 +84,8 @@
             "name": "HomeMatic CCU",
             "ccu_ip": "192.168.1.1",
             "filter_device":[],
-            "filter_channel":[]
+            "filter_channel":[],
+	     "outlets":[]
         }
     ],
 

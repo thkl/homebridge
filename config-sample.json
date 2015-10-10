@@ -1,0 +1,188 @@
+{
+    "bridge": {
+        "name": "Homebridge",
+        "username": "CC:22:3D:E3:CE:30",
+        "port": 51826,
+        "pin": "031-45-154"
+    },
+
+    "description": "This is an example configuration file with all supported devices. You can use this as a template for creating your own configuration file containing devices you actually own.",
+
+    "platforms": [
+        {
+            "platform" : "Nest",
+            "name" : "Nest",
+            "username" : "username",
+            "password" : "password"
+        },
+        {
+            "platform" : "TelldusLive",
+            "name" : "Telldus Live!",
+            "public_key" : "telldus public key",
+            "private_key" : "telldus private key",
+            "token" : "telldus token",
+            "token_secret" : "telldus token secret"
+        },
+        {
+            "platform": "Wink",
+            "name": "Wink",
+            "client_id": "YOUR_WINK_API_CLIENT_ID",
+            "client_secret": "YOUR_WINK_API_CLIENT_SECRET",
+            "username": "your@email.com",
+            "password": "WINK_PASSWORD"
+        },
+        {
+            "platform": "SmartThings",
+            "name": "SmartThings",
+            "app_id": "JSON SmartApp Id",
+            "access_token": "JSON SmartApp AccessToken"
+        },
+        {
+            "platform": "Domoticz",
+            "name": "Domoticz",
+            "server": "127.0.0.1",
+            "port": "8005"
+        },
+        {
+            "platform": "PhilipsHue",
+            "name": "Phillips Hue",
+            "username": ""
+        },
+        {
+            "platform": "ISY",
+            "name": "ISY",
+            "host": "192.168.1.20",
+            "port": "8000",
+            "username": "username",
+            "password": "password"
+        },
+        {
+            "platform": "LogitechHarmony",
+            "name": "Living Room Harmony Hub"
+        },
+        {
+            "platform": "Sonos",
+            "name": "Sonos",
+            "play_volume": 25
+        },
+        {
+            "platform": "YamahaAVR",
+            "play_volume": -35,
+            "setMainInputTo": "AirPlay"
+        },
+
+		{  // You have to create an private Application here : https://dev.netatmo.com to get clientID and clientSecret
+            "platform": "Netatmo",
+            "name": "NetAtmo",
+            "clientId": "",
+            "clientSecret": "",
+            "username": "",
+            "password": ""
+        },
+        {
+            "platform": "HomeMaticPlatform",
+            "name": "HomeMatic CCU",
+            "ccu_ip": "192.168.1.1",
+            "filter_device":[],
+            "filter_channel":[],
+            "outlets":[]
+        }
+    ],
+
+    "accessories": [
+        {
+            "accessory": "WeMo",
+            "name": "Coffee Maker",
+            "description": "This shim supports Belkin WeMo devices on the same network as this server. You can create duplicate entries for this device and change the 'name' attribute to reflect what device is plugged into the WeMo, for instance 'Air Conditioner' or 'Coffee Maker'. This name will be used by Siri. Make sure to update the 'wemo_name' attribute with the EXACT name of the device in the WeMo app itself. This can be the same value as 'name' but it doesn't have to be.",
+            "wemo_name": "CoffeeMaker"
+        },
+        {
+            "accessory": "LiftMaster",
+            "name": "Garage Door",
+            "description": "This shim supports LiftMaster garage door openers that are already internet-connected to the 'MyQ' service.",
+            // "requiredDeviceId", "<ID of door if you have multiple doors, prompted by shim during startup if needed>",
+            "username": "your-liftmaster-username",
+            "password" : "your-liftmaster-password"
+        },
+        {
+            "accessory": "Lockitron",
+            "name": "Front Door",
+            "description": "This shim supports Lockitron locks. It uses the Lockitron cloud API, so the Lockitron must be 'awake' for locking and unlocking to actually happen. You can wake up Lockitron after issuing an lock/unlock command by knocking on the door.",
+            "lock_id": "your-lock-id",
+            "api_token" : "your-lockitron-api-access-token"
+        },
+        {
+            "accessory": "Carwings",
+            "name": "Leaf",
+            "description": "This shim supports controlling climate control on Nissan cars with Carwings. Note that Carwings is super slow and it may take up to 5 minutes for your command to be processed by the Carwings system.",
+            "username": "your-carwings-username",
+            "password" : "your-carwings-password"
+        },
+        {
+            "accessory": "XfinityHome",
+            "name": "Xfinity Home",
+            "description": "This shim supports the 'Xfinity Home' security system. Unfortunately I don't know how to generate the 'dsig' property, so you'll need to figure yours out by running the Xfinity Home app on your iOS device while connected to a proxy server like Charles. If you didn't understand any of that, sorry! I welcome any suggestions for how to figure out dsig automatically.",
+            "email": "your-comcast-email@example.com",
+            "password": "your-comcast-password",
+            "dsig": "your-digital-signature",
+            "pin": "your-security-system-pin-code"
+        },
+        {
+            "accessory": "X10",
+            "name": "Lamp",
+            "ip_address": "localhost:3000",
+            "device_id": "E1",
+            "protocol": "pl",
+            "can_dim": true
+        },
+        {
+            "accessory": "Http",
+            "name": "Kitchen Lamp",
+            "on_url": "https://192.168.1.22:3030/devices/23222/on",
+            "off_url": "https://192.168.1.22:3030/devices/23222/off",
+            "brightness_url": "https://192.168.1.22:3030/devices/23222/brightness/%b",
+            "http_method": "POST"
+        },{
+            "accessory": "ELKM1",
+            "name": "Security System",
+            "description": "Allows basic control of Elk M1 security system. You can use 1 of 3 arm modes: Away, Stay, Night. If you need to access all 3, create 3 accessories with different names.",
+            "zone": "1",
+            "host": "192.168.1.10",
+            "port": "2101",
+            "pin": "1234",
+            "arm": "Away"
+        },
+        {
+            "accessory": "AD2USB",
+            "name": "Alarm",
+            "description": "Arm, disarm, and status monitoring of the default partition for Honeywell/Ademco alarm systems. Requires network configured AD2USB interface",
+            "host": "192.168.1.200", // IP address of the SER2SOCK service
+            "port" : 4999, // Port the SER2SOCK process is running on
+            "pin": "1234" // PIN used for arming / disarming
+        },
+        {
+            "accessory":"MiLight",
+            "name": "Lamp",
+            "ip_address": "255.255.255.255", // IP Address of the WiFi Bridge, or 255.255.255.255 to broadcast to all
+            "port": 8899, // Default port 8899 (50000 for v1 or v2 bridge)
+            "zone": 1, // Zone to address commands to (not used for rgb only bulbs)
+            "type": "rgbw", // Bulb type (rgbw, rgb, white)
+            "delay": 35, // Delay between commands sent to the WiFi bridge (default 35)
+            "repeat": 3 // Number of times each command is repeated for reliability (default 3)
+        },
+        {
+            "accessory": "Tesla",
+            "name": "Tesla",
+            "description": "This shim supports controlling climate control on the Tesla Model S.",
+            "username": "tesla_email",
+            "password" : "tesla_password"
+        },
+        {
+            "accessory": "Hyperion",
+            "name": "TV Backlight",
+            "description": "Control the Hyperion TV backlight server. https://github.com/tvdzwan/hyperion"
+            "host": "localhost",
+            "port": "19444"
+        }
+    ]
+}

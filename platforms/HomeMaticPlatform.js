@@ -1,15 +1,11 @@
 var types = require("HAP-NodeJS/accessories/types.js");
+var xmlrpc = require('homematic-xmlrpc')
+
 var request = require("request");
 var http = require("http");
 var path = require("path");
 
-
-var HomeMaticWeatherChannel = require(path.resolve(__dirname, 'homematic/Weather.js'));
-var HomeMaticDimmerChannel = require(path.resolve(__dirname, 'homematic/Dimmer.js'));
-var HomeMaticSwitchChannel = require(path.resolve(__dirname, 'homematic/Switch.js'));
-var HomeMaticThermostatChannel = require(path.resolve(__dirname, 'homematic/Thermostat.js'));
-var HomeMaticContactChannel = require(path.resolve(__dirname, 'homematic/Contact.js'));
-var HomeMaticBlindChannel = require(path.resolve(__dirname, 'homematic/Blind.js'));
+var HomeMaticGenericChannel = require(path.resolve(__dirname, 'homematic/HomematicChannel.js'));
 
 
 function RegaRequest(log,ccuip) {
@@ -53,7 +49,171 @@ RegaRequest.prototype = {
         post_req.end();
 
 
-   }
+   },
+   
+  getValue: function(channel,datapoint,callback) {
+      var that = this;
+      
+      var script = "var d = dom.GetObject(\""+channel+"."+datapoint+"\");if (d){Write(d.State());}";
+       //that.log("Rega Request " + script);
+       var regarequest = this.script(script, function(data) {
+		       that.log("Rega Response" + data);
+                if (data!=undefined) {
+                  callback(parseFloat(data));
+                }
+        }
+       );
+  },
+  
+  setValue: function(channel,datapoint,value) {
+      var that = this;
+      
+      var script = "var d = dom.GetObject(\""+channel+"."+datapoint+"\");if (d){d.State(\""+value+"\");}";
+       //that.log("Rega Request " + script);
+       var regarequest = this.script(script, function(data) {
+       });
+  }
+
+}
+
+function HomematicRPC(log,ccuip,platform) {
+    this.log = log;
+    this.ccuip = ccuip;
+    this.platform = platform;
+	this.server;
+	this.client;
+	this.stopping = false;
+	this.localIP;
+}
+
+HomematicRPC.prototype= {
+
+
+   init:function() {
+	   	var that = this;
+	   	
+	   	var ip = this.getIPAddress();
+	   	if (ip=="0.0.0.0") {
+	   	  that.log("Can not fetch IP");
+	   	  return;
+	   	}
+		
+		this.localIP = ip;
+		this.log("Local IP: "+this.localIP)
+		
+	    this.server = xmlrpc.createServer({ host: this.localIP , port: 9090 })
+
+	    this.server.on('NotFound', function(method, params) {
+    	  that.log('Method ' + method + ' does not exist');
+    	});
+    	
+		this.server.on('system.listMethods', function (err, params, callback) {
+    	 that.log('Method call params for \'system.listMethods\': ' + params)
+     	 callback(null,['system.listMethods', 'system.multicall']);
+	    });
+
+		
+		this.server.on('system.multicall', function (err, params, callback) {
+ 			params.map(function(events) {
+   			try {
+     			events.map(function(event){
+     			if ((event["methodName"]=="event") && (event['params'] != undefined)) {
+       			var params = event['params'];
+       			var channel = "BidCos-RF." + params[1];
+       			var datapoint = params[2];
+       			var value = params[3];
+	    			that.platform.foundAccessories.map(function(accessory){
+					if (accessory.adress == channel) {
+				  		accessory.event(datapoint,value);
+					}
+		 		});
+      			}
+	 		});
+     		} catch(err) {}
+  			});
+	  callback(null);
+	  });
+	
+	this.log('XML-RPC server listening on port 9090')
+    setTimeout(function () {
+      that.connect();
+    }, 1000)
+
+    
+	process.on('SIGINT', function () {
+    	if (that.stopping) {
+        	return;
+    	}
+    	that.stopping = true;
+    	that.stop();
+	});
+
+	process.on('SIGTERM', function () {
+    	if (that.stopping) {
+        	return;
+    	}
+    	that.stopping = true;
+    	that.stop();
+	});
+
+   },
+   
+   getIPAddress: function() {
+      var interfaces = require('os').networkInterfaces();
+      for (var devName in interfaces) {
+      var iface = interfaces[devName];
+      for (var i = 0; i < iface.length; i++) {
+       var alias = iface[i];
+       if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal)
+        return alias.address;
+       }
+      }
+	  return '0.0.0.0';
+   },
+
+   getValue:function(channel,datapoint,callback) {
+   
+     var that = this;
+     
+     if (channel.indexOf("BidCos-RF.")>-1) {
+       channel = channel.substr(10);
+       this.client.methodCall('getValue', [channel,datapoint], function (error, value) {
+		callback(value);
+       });
+       return;
+     }
+   },
+
+   setValue:function(channel,datapoint,value) {
+     
+     var that = this;
+     
+     if (channel.indexOf("BidCos-RF.")>-1) {
+       channel = channel.substr(10);
+     }
+     
+     this.client.methodCall('setValue', [channel,datapoint,value], function (error, value) {
+
+     });
+   },
+
+   connect:function(){
+   	 var that = this;
+	 this.client = xmlrpc.createClient({ host: this.ccuip, port: 2001, path: '/'})
+  	 this.client.methodCall('init', ['http://'+this.localIP+':9090','homebridge'], function (error, value) {
+      
+     });
+   },
+   
+   
+   stop:function() {
+    this.log("Removing Event Server");
+    this.client.methodCall('init', ['http://'+this.localIP+':9090'], function (error, value) {
+
+    });
+   setTimeout(process.exit(0), 1000);
+  }
+
 }
 
 
@@ -62,18 +222,26 @@ function HomeMaticPlatform(log, config) {
    this.ccuIP 	= config["ccu_ip"];
    this.filter_device  = config["filter_device"];
    this.filter_channel  = config["filter_channel"];
-   this.outlets = config["outlets"];
+
    this.sendQueue = [];
    this.timer   = 0;
+   
+   this.foundAccessories = [];
+   this.adressesToQuery = [];
+   
+   this.xmlrpc = new HomematicRPC(this.log,this.ccuIP,this);
+   this.xmlrpc.init();
 }
 
 HomeMaticPlatform.prototype = {
+   
+  
 
   accessories: function(callback) {
     this.log("Fetching Homematic devices...");
 	var that = this;
-    var foundAccessories = [];
-
+    that.foundAccessories = [];
+     
     var script = "string sDeviceId;string sChannelId;boolean df = true;Write(\'{\"devices\":[\');foreach(sDeviceId, root.Devices().EnumIDs()){object oDevice = dom.GetObject(sDeviceId);if(oDevice){var oInterface = dom.GetObject(oDevice.Interface());if(df) {df = false;} else { Write(\',\');}Write(\'{\');Write(\'\"id\": \"\' # sDeviceId # \'\",\');Write(\'\"name\": \"\' # oDevice.Name() # \'\",\');Write(\'\"address\": \"\' # oDevice.Address() # \'\",\');Write(\'\"channels\": [\');boolean bcf = true;foreach(sChannelId, oDevice.Channels().EnumIDs()){object oChannel = dom.GetObject(sChannelId);if(bcf) {bcf = false;} else {Write(\',\');}Write(\'{\');Write(\'\"cId\": \' # sChannelId # \',\');Write(\'\"name\": \"\' # oChannel.Name() # \'\",\');if(oInterface){Write(\'\"address\": \"\' # oInterface.Name() #\'.'\ # oChannel.Address() # \'\",\')};Write(\'\"type\": \"\' # oChannel.HssType() # \'\"\');Write(\'}\');}Write(\']}\');}}Write(\']}\');";
 
     var regarequest = new RegaRequest(this.log,this.ccuIP).script(script, function(data) {
@@ -91,7 +259,7 @@ HomeMaticPlatform.prototype = {
 
              				if ((device['channels'] != undefined) && (!isFiltered)) {
 
-             				device['channels'].map(function(ch) {
+             				device['channels'].map(function(ch) {
 				            var isChannelFiltered = false;
 
 				            if ((that.filter_channel != undefined) && (that.filter_channel.indexOf(ch.address) > -1)) {
@@ -101,46 +269,15 @@ HomeMaticPlatform.prototype = {
 				            }
 
              				  if ((ch.address != undefined) && (!isChannelFiltered)) {
-             				   if (ch.type=="SWITCH") {
+             				  
+ 								
+								if ((ch.type=="SWITCH") || (ch.type=="BLIND") || (ch.type=="SHUTTER_CONTACT")
+								 || (ch.type=="DIMMER") || (ch.type=="CLIMATECONTROL_RT_TRANSCEIVER")){
              				    // Switch found
-             				    
-             				    // Check if marked as Outlet
-             				    var outlet = (that.outlets.indexOf(ch.address) > -1)
-              				    accessory = new HomeMaticSwitchChannel(that.log, that, ch.id , ch.name , ch.type , ch.address,outlet);
-				                foundAccessories.push(accessory);
+              				    accessory = new HomeMaticGenericChannel(that.log, that, ch.id , ch.name , ch.type , ch.address);
+				                that.foundAccessories.push(accessory);
              				   }
-
-             				   if (ch.type=="DIMMER") {
-             				    // Dimmer found
-              				    accessory = new HomeMaticDimmerChannel(that.log, that, ch.id , ch.name , ch.type , ch.address);
-				                foundAccessories.push(accessory);
-             				   }
-
-             				   if (ch.type=="BLIND") {
-             				    // Blind found
-              				    accessory = new HomeMaticBlindChannel(that.log, that, ch.id , ch.name , ch.type , ch.address);
-				                foundAccessories.push(accessory);
-             				   }
-
-             				   if (ch.type=="CLIMATECONTROL_RT_TRANSCEIVER") {
-             				    // ThermoControl found
-              				    accessory = new HomeMaticThermostatChannel(that.log, that, ch.id , ch.name , ch.type , ch.address);
-				                foundAccessories.push(accessory);
-             				   }
-
-             				   if (ch.type=="WEATHER") {
-             				    // ThermoControl found
-              				    accessory = new HomeMaticWeatherChannel(that.log, that, ch.id , ch.name , ch.type , ch.address);
-				                foundAccessories.push(accessory);
-             				   }
-
-             				   if (ch.type=="SHUTTER_CONTACT") {
-             				    // ThermoControl found
-              				    accessory = new HomeMaticContactChannel(that.log, that, ch.id , ch.name , ch.type , ch.address);
-				                foundAccessories.push(accessory);
-             				   }
-
-
+								
 
 							 } else {
 							   that.log(device.name + " has no address");
@@ -151,13 +288,44 @@ HomeMaticPlatform.prototype = {
              		      that.log(device.name + " has no channels or is filtered");
              		     }
           			  });
-				 callback(foundAccessories);
+				 callback(that.foundAccessories);
 				} else {
-				 callback(foundAccessories);
+				 callback(that.foundAccessories);
 				}
     });
+   
   },
+  
+  setValue:function(channel,datapoint,value) {
+    if (channel.indexOf("BidCos-RF.")>-1) { 
+    	this.xmlrpc.setValue(channel,datapoint,value);
+    	return;
+    }
 
+  	if (channel.indexOf("VirtualDevices.")>-1) { 
+  	    var rega = new RegaRequest(this.log,this.ccuIP);
+  	    rega.setValue(channel,datapoint,value);
+  	    return;
+  	}
+    
+  },
+ 
+ 
+  getValue:function(channel,datapoint,callback) {
+    
+    if (channel.indexOf("BidCos-RF.")>-1) { 
+  		this.xmlrpc.getValue(channel,datapoint,callback);
+  		return;
+  	}
+  	
+  	if (channel.indexOf("VirtualDevices.")>-1) { 
+  	    var rega = new RegaRequest(this.log,this.ccuIP);
+  	    rega.getValue(channel,datapoint,callback);
+  	    return;
+  	}
+  	
+  },
+  
   prepareRequest: function(accessory,script) {
     var that = this;
     this.sendQueue.push(script);
@@ -171,8 +339,8 @@ HomeMaticPlatform.prototype = {
       script = script + command;
     });
     this.sendQueue = [];
+    //this.log("RegaSend: " + script);
     var regarequest = new RegaRequest(this.log,this.ccuIP).script(script, function(data) {
-
     });
   },
 
@@ -201,10 +369,8 @@ HomeMaticPlatform.prototype = {
     var that = this;
     this.delayed[delay] = setTimeout( function(){clearTimeout(that.delayed[delay]);that.sendPreparedRequests()}, delay?delay:100);
     this.log("New Timer was set");
-  },
-
+  }
 }
-
 
 
 

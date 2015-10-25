@@ -135,10 +135,8 @@ HomematicRPC.prototype= {
 	  });
 	
 	this.log('XML-RPC server listening on port 9090')
-    setTimeout(function () {
-      that.connect();
-    }, 1000)
-
+    this.connect();
+    
     
 	process.on('SIGINT', function () {
     	if (that.stopping) {
@@ -174,6 +172,7 @@ HomematicRPC.prototype= {
    getValue:function(channel,datapoint,callback) {
    
      var that = this;
+     if (this.client == undefined) return;
      
      if (channel.indexOf("BidCos-RF.")>-1) {
        channel = channel.substr(10);
@@ -188,6 +187,8 @@ HomematicRPC.prototype= {
      
      var that = this;
      
+     if (this.client == undefined) return;
+
      if (channel.indexOf("BidCos-RF.")>-1) {
        channel = channel.substr(10);
      }
@@ -199,9 +200,11 @@ HomematicRPC.prototype= {
 
    connect:function(){
    	 var that = this;
-	 this.client = xmlrpc.createClient({ host: this.ccuip, port: 2001, path: '/'})
-  	 this.client.methodCall('init', ['http://'+this.localIP+':9090','homebridge'], function (error, value) {
-      
+   	 this.log('Creating Local HTTP Client for CCU RPC Events');
+	 this.client = xmlrpc.createClient({ host: this.ccuip, port: 2001, path: '/'});
+  	 this.log('CCU RPC Init Call on port 2001');
+	 this.client.methodCall('init', ['http://'+this.localIP+':9090','homebridge'], function (error, value) {
+		that.log('CCU Response ....')
      });
    },
    

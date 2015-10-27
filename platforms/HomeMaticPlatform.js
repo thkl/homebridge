@@ -30,7 +30,7 @@ RegaRequest.prototype = {
 
         var post_req = http.request(post_options, function(res) {
             var data = "";
-            res.setEncoding('utf8');
+            res.setEncoding('binary');
             res.on('data', function (chunk) {
                 data += chunk.toString();
             });

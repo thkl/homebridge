@@ -11,6 +11,7 @@ function HomeMaticGenericChannel(log,platform, id ,name, type ,adress,special) {
   this.eventupdate = false;
   this.special  = special;
   this.currentStateCharacteristic = [];
+  this.reverseDP = [];
 }
 
 
@@ -21,11 +22,14 @@ HomeMaticGenericChannel.prototype = {
 
  // Return current States
   query: function(dp,callback) {
-
+    var that = this;
+      
     if (this.state[dp] != undefined) {
       callback(this.state[dp]);
     } else {
+//      that.log("No cached Value found start fetching and send temp 0 back");
       this.remoteGetValue(dp);
+      callback(0);
     }
 
   },
@@ -47,7 +51,7 @@ HomeMaticGenericChannel.prototype = {
   	    that.eventupdate = false;
   	  });
   },
-  
+
   
   event:function(dp,newValue) {
     
@@ -60,11 +64,25 @@ HomeMaticGenericChannel.prototype = {
     this.eventupdate = false;
   },
 
+  reverse:function(value) {
+    if (value=="true") return "false";
+    if (value=="false") return "true";
+    if (value==0) return 1;
+    if (value==1) return 0;
+    if (value=="0") return "1";
+    if (value=="1") return "0";
+    return value;
+  },
 
   cache:function(dp,value) {
     var that = this;
+
+    if ((that.reverseDP[dp]!=undefined) && (that.reverseDP[dp]==true)) {
+  	  value = that.reverse(value);
+  	} 
+  	
     if (that.currentStateCharacteristic[dp]!=undefined) {
-            that.currentStateCharacteristic[dp].updateValue(value, null);
+       that.currentStateCharacteristic[dp].updateValue(value, null);
     }
     this.state[dp] = value;
   },
@@ -94,11 +112,10 @@ HomeMaticGenericChannel.prototype = {
    var that = this;
 
    if (mode == "set") {
-       
+        //this.log("Send " + value + " to Datapoint " + dp + " at " + that.adress);
 		that.platform.setValue(that.adress,dp,value);
    }
   },
-
 
   informationCharacteristics: function() {
     return [
@@ -215,7 +232,90 @@ HomeMaticGenericChannel.prototype = {
      } 
     }
     
-    
+      
+     if (this.type=="KEYMATIC") {
+     cTypes.push(
+      {
+        cType: types.CURRENT_LOCK_MECHANISM_STATE_CTYPE,
+        
+        onRead: function(callback) {
+           that.query("STATE",callback);
+        },
+        
+        onRegister: function(characteristic) { 
+            that.currentStateCharacteristic["STATE"] = characteristic;
+            characteristic.eventEnabled = true;
+            that.remoteGetValue("STATE");
+        },
+
+        perms: ["pr","ev"],
+        format: "bool",
+        initialValue: that.dpvalue("STATE",0),
+        supportEvents: false,
+        supportBonjour: false,
+        manfDescription: "Current State of your Lock",
+ 		designedMaxLength: 1
+      },
+      {
+        cType: types.TARGET_LOCK_MECHANISM_STATE_CTYPE,
+        
+        onUpdate: function(value) {
+            that.command("set","STATE",(value==1)?"true":"false")
+        },
+        
+        onRead: function(callback) {
+           that.query("STATE",callback);
+        },
+        
+        onRegister: function(characteristic) { 
+            that.reverseDP["STATE"] = true;
+            that.currentStateCharacteristic["STATE"] = characteristic;
+            characteristic.eventEnabled = true;
+            that.remoteGetValue("STATE");
+        },
+
+        
+        perms: ["pw","pr","ev"],
+        format: "bool",
+        initialValue: that.dpvalue("STATE",0),
+        supportEvents: false,
+        supportBonjour: false,
+        manfDescription: "Target State of your Lock",
+ 		designedMaxLength: 1
+      }
+      
+      ,
+      {
+        cType: types.TARGET_DOORSTATE_CTYPE,
+        
+         onUpdate: function(value) {
+            that.command("set","OPEN" , "true")
+        },
+
+        onRead: function(callback) {
+           callback(1);
+        },
+        
+        onRegister: function(characteristic) { 
+            that.currentStateCharacteristic["OPEN"] = characteristic;
+            characteristic.eventEnabled = true;
+        },
+        
+        perms: ["pw","pr","ev"],
+        format: "bool",
+        initialValue: 1,
+        supportEvents: false,
+        supportBonjour: false,
+        manfDescription: "Open the Lock",
+ 		designedMaxLength: 1
+      }      
+      );
+      
+      
+    }
+
+
+
     if (this.type=="DIMMER") {
      cTypes.push({
         cType: types.POWER_STATE_CTYPE,
@@ -275,9 +375,6 @@ HomeMaticGenericChannel.prototype = {
      cTypes.push(
       {
         cType: types.WINDOW_COVERING_CURRENT_POSITION_CTYPE,
-        onUpdate: function(value) {
-          that.delayed("set","LEVEL" , String(value/100),100);
-        },
         
         onRead: function(callback) {
            that.query("LEVEL",callback);
@@ -289,18 +386,72 @@ HomeMaticGenericChannel.prototype = {
             that.remoteGetValue("LEVEL");
         },
 
+        perms: ["pr","ev"],
+        format: "int",
+        initialValue: that.dpvalue("LEVEL",0),
+        supportEvents: false,
+        supportBonjour: false,
+        manfDescription: "Current Blind Position",
+        designedMinValue: 0,
+        designedMaxValue: 100,
+        designedMinStep: 1,
+        unit: "%"
+      },
+      
+      {
+      cType: types.WINDOW_COVERING_TARGET_POSITION_CTYPE,
         
+        onUpdate: function(value) {
+          that.delayed("set","LEVEL" , String(value/100),100);
+        },
+        
+
+        onRead: function(callback) {
+           that.query("LEVEL",callback);
+        },
+        
+        onRegister: function(characteristic) { 
+            that.currentStateCharacteristic["LEVEL"] = characteristic;
+            characteristic.eventEnabled = true;
+            that.remoteGetValue("LEVEL");
+        },
+
         perms: ["pw","pr","ev"],
         format: "int",
         initialValue: that.dpvalue("LEVEL",0),
         supportEvents: false,
         supportBonjour: false,
-        manfDescription: "Adjust Brightness of Light",
+        manfDescription: "Target Blind Position",
         designedMinValue: 0,
         designedMaxValue: 100,
         designedMinStep: 1,
         unit: "%"
-      });
+      },
+      {
+      cType: types.WINDOW_COVERING_OPERATION_STATE_CTYPE,
+        
+        onRead: function(callback) {
+           that.query("DIRECTION",callback);
+        },
+        
+        onRegister: function(characteristic) { 
+            that.currentStateCharacteristic["DIRECTION"] = characteristic;
+            characteristic.eventEnabled = true;
+            that.remoteGetValue("DIRECTION");
+        },
+
+        perms: ["pr","ev"],
+        format: "int",
+        initialValue: that.dpvalue("DIRECTION",0),
+        supportEvents: false,
+        supportBonjour: false,
+        manfDescription: "Operating State ",
+        designedMinValue: 0,
+        designedMaxValue: 2,
+        designedMinStep: 1
+      }
+      
+      );
     }
     
     if (this.type=="SHUTTER_CONTACT") { 
@@ -451,6 +602,13 @@ HomeMaticGenericChannel.prototype = {
 	if (this.type=="MOTION_DETECTOR") {
 	  return types.MOTION_SENSOR_STYPE
 	}
+
+
+	if (this.type=="KEYMATIC") {
+	  return types.LOCK_MECHANISM_STYPE
+	}
+	
+	
 	
   },
 

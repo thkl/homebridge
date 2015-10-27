@@ -172,10 +172,13 @@ HomematicRPC.prototype= {
    getValue:function(channel,datapoint,callback) {
    
      var that = this;
-     if (this.client == undefined) return;
-     
+     if (this.client == undefined) {
+     	that.log("Returning cause client is invalid");
+     	return;
+     }
      if (channel.indexOf("BidCos-RF.")>-1) {
        channel = channel.substr(10);
+       this.log("Calling rpc getValue");
        this.client.methodCall('getValue', [channel,datapoint], function (error, value) {
 		callback(value);
        });
@@ -245,7 +248,7 @@ HomeMaticPlatform.prototype = {
 	var that = this;
     that.foundAccessories = [];
      
-    var script = "string sDeviceId;string sChannelId;boolean df = true;Write(\'{\"devices\":[\');foreach(sDeviceId, root.Devices().EnumIDs()){object oDevice = dom.GetObject(sDeviceId);if(oDevice){var oInterface = dom.GetObject(oDevice.Interface());if(df) {df = false;} else { Write(\',\');}Write(\'{\');Write(\'\"id\": \"\' # sDeviceId # \'\",\');Write(\'\"name\": \"\' # oDevice.Name() # \'\",\');Write(\'\"address\": \"\' # oDevice.Address() # \'\",\');Write(\'\"channels\": [\');boolean bcf = true;foreach(sChannelId, oDevice.Channels().EnumIDs()){object oChannel = dom.GetObject(sChannelId);if(bcf) {bcf = false;} else {Write(\',\');}Write(\'{\');Write(\'\"cId\": \' # sChannelId # \',\');Write(\'\"name\": \"\' # oChannel.Name() # \'\",\');if(oInterface){Write(\'\"address\": \"\' # oInterface.Name() #\'.'\ # oChannel.Address() # \'\",\')};Write(\'\"type\": \"\' # oChannel.HssType() # \'\"\');Write(\'}\');}Write(\']}\');}}Write(\']}\');";
+    var script = "string sDeviceId;string sChannelId;boolean df = true;Write(\'{\"devices\":[\');foreach(sDeviceId, root.Devices().EnumIDs()){object oDevice = dom.GetObject(sDeviceId);if(oDevice){var oInterface = dom.GetObject(oDevice.Interface());if(df) {df = false;} else { Write(\',\');}Write(\'{\');Write(\'\"id\": \"\' # sDeviceId # \'\",\');Write(\'\"name\": \"\' # oDevice.Name() # \'\",\');Write(\'\"address\": \"\' # oDevice.Address() # \'\",\');Write(\'\"channels\": [\');boolean bcf = true;foreach(sChannelId, oDevice.Channels().EnumIDs()){object oChannel = dom.GetObject(sChannelId);if(bcf) {bcf = false;} else {Write(\',\');}Write(\'{\');Write(\'\"cId\": \' # sChannelId # \',\');Write(\'\"name\": \"\' # oChannel.Name() # \'\",\');if(oInterface){Write(\'\"address\": \"\' # oInterface.Name() #\'.'\ # oChannel.Address() # \'\",\');}Write(\'\"type\": \"\' # oChannel.HssType() # \'\"\');Write(\'}\');}Write(\']}\');}}Write(\']}\');";
 
     var regarequest = new RegaRequest(this.log,this.ccuIP).script(script, function(data) {
                 var json  = JSON.parse(data);
@@ -276,7 +279,7 @@ HomeMaticPlatform.prototype = {
  								
 								if ((ch.type=="SWITCH") || (ch.type=="BLIND") || (ch.type=="SHUTTER_CONTACT")
 								 || (ch.type=="DIMMER") || (ch.type=="CLIMATECONTROL_RT_TRANSCEIVER")
-								 || (ch.type=="MOTION_DETECTOR")
+								 || (ch.type=="MOTION_DETECTOR") || (ch.type=="KEYMATIC")
 								 ) {
              				    // Switch found
               				    accessory = new HomeMaticGenericChannel(that.log, that, ch.id , ch.name , ch.type , ch.address);
@@ -292,7 +295,17 @@ HomeMaticPlatform.prototype = {
              		     } else {
              		      that.log(device.name + " has no channels or is filtered");
              		     }
+
           			  });
+
+/*
+              				    accessory = new HomeMaticGenericChannel(that.log, that, "1234" , "DummyKM" , "KEYMATIC" , "1234");
+				                that.foundAccessories.push(accessory);
+
+              				    accessory = new HomeMaticGenericChannel(that.log, that, "5678" , "DummyBLIND" , "BLIND" , "5678");
+				                that.foundAccessories.push(accessory);
+          			  
+				                */
 				 callback(that.foundAccessories);
 				} else {
 				 callback(that.foundAccessories);

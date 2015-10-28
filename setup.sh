@@ -99,4 +99,4 @@ fi
 
 info "Done. If there are no error messages you are done."
 info "Your config is ready to use"
-info "to start the homebridge call npm run start."
+info "to start the homebridge goto /home/pi/homebridge and call npm run start."

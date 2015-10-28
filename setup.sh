@@ -44,7 +44,7 @@ sudo cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
 sudo dpkg-reconfigure -f noninteractive tzdata
 
 info "Setting up Hostname"
-echo Homebridge > /etc/hostname
+sudo echo Homebridge > /etc/hostname
 
 info "Cleaning up"
 sudo dpkg --configure -a

@@ -1,14 +1,14 @@
 var fs = require('fs');
 var path = require('path');
 var storage = require('node-persist');
-var hap = require('hap-nodejs');
-var uuid = require('hap-nodejs').uuid;
-var Bridge = require('hap-nodejs').Bridge;
-var Accessory = require('hap-nodejs').Accessory;
-var Service = require('hap-nodejs').Service;
-var Characteristic = require('hap-nodejs').Characteristic;
-var accessoryLoader = require('hap-nodejs').AccessoryLoader;
-var once = require('hap-nodejs/lib/util/once').once;
+var hap = require("hap-nodejs");
+var uuid = require("hap-nodejs").uuid;
+var Bridge = require("hap-nodejs").Bridge;
+var Accessory = require("hap-nodejs").Accessory;
+var Service = require("hap-nodejs").Service;
+var Characteristic = require("hap-nodejs").Characteristic;
+var accessoryLoader = require("hap-nodejs").AccessoryLoader;
+var once = require("hap-nodejs/lib/util/once").once;
 
 console.log("Starting HomeBridge server...");
 
@@ -76,7 +76,7 @@ function loadAccessories() {
 
         // Load up the class for this accessory
         var accessoryType = accessoryConfig["accessory"]; // like "WeMo"
-        var accessoryModule = require('./node_modules/homebridge/accessories/' + accessoryType + ".js"); // like "./accessories/WeMo.js"
+        var accessoryModule = require('./accessories/' + accessoryType + ".js"); // like "./accessories/WeMo.js"
         var accessoryConstructor = accessoryModule.accessory; // like "WeMoAccessory", a JavaScript constructor
 
         // Create a custom logging function that prepends the device display name for debugging
@@ -104,6 +104,7 @@ function loadPlatforms() {
         // Load up the class for this accessory
         var platformType = platformConfig["platform"]; // like "Wink"
         var platformName = platformConfig["name"];
+        
         var platformPath = "./platforms/" + platformType + ".js";
         // Check my Implentation
         
@@ -114,6 +115,7 @@ function loadPlatforms() {
         
         var platformModule = require(platformPath); // like "./platforms/Wink.js"
         var platformConstructor = platformModule.platform; // like "WinkPlatform", a JavaScript constructor
+		
 
         // Create a custom logging function that prepends the platform name for debugging
         var log = createLog(platformName);

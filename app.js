@@ -76,7 +76,16 @@ function loadAccessories() {
 
         // Load up the class for this accessory
         var accessoryType = accessoryConfig["accessory"]; // like "WeMo"
-        var accessoryModule = require('./accessories/' + accessoryType + ".js"); // like "./accessories/WeMo.js"
+        
+        var accessoryPath = "./accessories/" + accessoryType + ".js";
+        
+        if  (fs.existsSync(accessoryPath)==false) {
+          // is not here use original homebridge
+           accessoryPath = './node_modules/homebridge/accessories/' + accessoryType + ".js"
+        } 
+
+        
+        var accessoryModule = require(accessoryPath); // like "./accessories/WeMo.js"
         var accessoryConstructor = accessoryModule.accessory; // like "WeMoAccessory", a JavaScript constructor
 
         // Create a custom logging function that prepends the device display name for debugging

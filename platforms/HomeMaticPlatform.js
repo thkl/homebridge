@@ -276,16 +276,11 @@ HomeMaticPlatform.prototype = {
 
              				  if ((ch.address != undefined) && (!isChannelFiltered)) {
              				  
- 								
-								if ((ch.type=="SWITCH") || (ch.type=="BLIND") || (ch.type=="SHUTTER_CONTACT")
-								 || (ch.type=="DIMMER") || (ch.type=="CLIMATECONTROL_RT_TRANSCEIVER")
-								 || (ch.type=="MOTION_DETECTOR") || (ch.type=="KEYMATIC")
-								 ) {
-             				    // Switch found
               				    accessory = new HomeMaticGenericChannel(that.log, that, ch.id , ch.name , ch.type , ch.address);
-				                that.foundAccessories.push(accessory);
-             				   }
-								
+				                // Check support
+				                if (accessory.sType()!=undefined) {
+					                that.foundAccessories.push(accessory);
+             				    } 
 
 							 } else {
 							   that.log(device.name + " has no address");
@@ -298,14 +293,6 @@ HomeMaticPlatform.prototype = {
 
           			  });
 
-/*
-              				    accessory = new HomeMaticGenericChannel(that.log, that, "1234" , "DummyKM" , "KEYMATIC" , "1234");
-				                that.foundAccessories.push(accessory);
-
-              				    accessory = new HomeMaticGenericChannel(that.log, that, "5678" , "DummyBLIND" , "BLIND" , "5678");
-				                that.foundAccessories.push(accessory);
-          			  
-				                */
 				 callback(that.foundAccessories);
 				} else {
 				 callback(that.foundAccessories);

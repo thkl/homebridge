@@ -39,12 +39,12 @@ info "Setting up locale and keyboard"
 sudo dpkg-reconfigure locales
 
 TIMEZONE="Europe/Berlin"
-sudo echo $TIMEZONE > /etc/timezone
+echo $TIMEZONE | sudo tee /etc/timezone
 sudo cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
 sudo dpkg-reconfigure -f noninteractive tzdata
 
 info "Setting up Hostname"
-sudo echo Homebridge > /etc/hostname
+echo 'Homebridge' | sudo tee /etc/hostname
 
 info "Cleaning up"
 sudo dpkg --configure -a

@@ -371,6 +371,8 @@ HomeMaticGenericChannel.prototype = {
       });
     }
 
+
+
     if (this.type=="BLIND") {
      cTypes.push(
       {
@@ -454,6 +456,8 @@ HomeMaticGenericChannel.prototype = {
       );
     }
     
+    // Simple Contact (Magnet)
+    
     if (this.type=="SHUTTER_CONTACT") { 
 	 cTypes.push(
 	 {  
@@ -477,6 +481,8 @@ HomeMaticGenericChannel.prototype = {
       manfDescription: "Current State"
 	 });
 	}
+	
+	// Motion Detector
 	
 	if (this.type=="MOTION_DETECTOR") { 
 	 cTypes.push(
@@ -502,7 +508,9 @@ HomeMaticGenericChannel.prototype = {
 	 });
 	}
 	
-	if (this.type=="CLIMATECONTROL_RT_TRANSCEIVER") {
+	// Heating Device
+	
+	if (this.type=="CLIMATECONTROL_RT_TRANSCEIVER") || (this.type=="THERMALCONTROL_TRANSMIT")) {
     
     cTypes.push({
       cType: types.NAME_CTYPE,onUpdate: null,perms: ["pr"],format: "string",

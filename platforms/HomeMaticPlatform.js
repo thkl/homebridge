@@ -279,6 +279,7 @@ HomeMaticPlatform.prototype = {
  								
 								if ((ch.type=="SWITCH") || (ch.type=="BLIND") || (ch.type=="SHUTTER_CONTACT")
 								 || (ch.type=="DIMMER") || (ch.type=="CLIMATECONTROL_RT_TRANSCEIVER")
+								 || (ch.type=="THERMALCONTROL_TRANSMIT")
 								 || (ch.type=="MOTION_DETECTOR") || (ch.type=="KEYMATIC")
 								 ) {
              				    // Switch found

@@ -510,7 +510,7 @@ HomeMaticGenericChannel.prototype = {
 	
 	// Heating Device
 	
-	if (this.type=="CLIMATECONTROL_RT_TRANSCEIVER") || (this.type=="THERMALCONTROL_TRANSMIT")) {
+	if ((this.type=="CLIMATECONTROL_RT_TRANSCEIVER") || (this.type=="THERMALCONTROL_TRANSMIT")) {
     
     cTypes.push({
       cType: types.NAME_CTYPE,onUpdate: null,perms: ["pr"],format: "string",

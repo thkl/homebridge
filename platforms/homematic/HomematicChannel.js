@@ -591,7 +591,7 @@ HomeMaticGenericChannel.prototype = {
       return types.WINDOW_COVERING_STYPE;
 	}
 
-    if (this.type=="CLIMATECONTROL_RT_TRANSCEIVER") { 
+    if ((this.type=="CLIMATECONTROL_RT_TRANSCEIVER") || (this.type=="THERMALCONTROL_TRANSMIT")) { 
       return types.THERMOSTAT_STYPE;
 	}
 	

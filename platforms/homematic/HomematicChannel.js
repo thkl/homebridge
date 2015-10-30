@@ -11,7 +11,7 @@ function HomeMaticGenericChannel(log,platform, id ,name, type ,adress,special) {
   this.eventupdate = false;
   this.special  = special;
   this.currentStateCharacteristic = [];
-  this.reverseDP = [];
+  this.datapointMappings = [];
 }
 
 
@@ -19,6 +19,13 @@ function HomeMaticGenericChannel(log,platform, id ,name, type ,adress,special) {
 
 HomeMaticGenericChannel.prototype = {
 
+
+  addValueMapping: function(dp,value,mappedvalue) {
+    if (this.datapointMappings[dp]==undefined) {
+      this.datapointMappings[dp] = [];
+    }
+    this.datapointMappings[dp][value] = mappedvalue;
+  } ,
 
  // Return current States
   query: function(dp,callback) {
@@ -64,23 +71,20 @@ HomeMaticGenericChannel.prototype = {
     this.eventupdate = false;
   },
 
-  reverse:function(value) {
-    if (value=="true") return "false";
-    if (value=="false") return "true";
-    if (value==0) return 1;
-    if (value==1) return 0;
-    if (value=="0") return "1";
-    if (value=="1") return "0";
-    return value;
-  },
-
   cache:function(dp,value) {
     var that = this;
 
-    if ((that.reverseDP[dp]!=undefined) && (that.reverseDP[dp]==true)) {
-  	  value = that.reverse(value);
-  	} 
-  	
+
+	// Check custom Mapping from HM to HomeKit
+    var map = this.datapointMappings[dp];
+    if (map != undefined) {
+      this.log("Mapping found for " + dp);
+      if (map[value]!=undefined) {
+         this.log("Mapping found for " + dp + " " + value);
+         value = map[value];
+      }
+    }
+	
     if (that.currentStateCharacteristic[dp]!=undefined) {
        that.currentStateCharacteristic[dp].updateValue(value, null);
     }
@@ -268,7 +272,8 @@ HomeMaticGenericChannel.prototype = {
         },
         
         onRegister: function(characteristic) { 
-            that.reverseDP["STATE"] = true;
+            that.addValueMapping("STATE","1",0);
+            that.addValueMapping("STATE","0",1);
             that.currentStateCharacteristic["STATE"] = characteristic;
             characteristic.eventEnabled = true;
             that.remoteGetValue("STATE");
@@ -468,7 +473,7 @@ HomeMaticGenericChannel.prototype = {
         },
         
         onRegister: function(characteristic) { 
-            that.currentStateCharacteristic["STATE"] = characteristic;
+			that.currentStateCharacteristic["STATE"] = characteristic;
             characteristic.eventEnabled = true;
             that.remoteGetValue("STATE");
         },
@@ -481,6 +486,33 @@ HomeMaticGenericChannel.prototype = {
       manfDescription: "Current State"
 	 });
 	}
+	
+	// Rotary Handle 
+    if (this.type=="ROTARY_HANDLE_SENSOR") { 
+	 cTypes.push(
+	 {  
+	 	cType: types.CONTACT_SENSOR_STATE_CTYPE,
+            
+        onRead: function(callback) {
+            that.query("STATE",callback);
+        },
+        
+        onRegister: function(characteristic) {  
+            that.addValueMapping("STATE","2",1);
+		    that.currentStateCharacteristic["STATE"] = characteristic;
+            characteristic.eventEnabled = true;
+            that.remoteGetValue("STATE");
+        },
+      
+      perms: ["pr","ev"],
+      format: "bool",
+      initialValue: that.dpvalue("STATE",0),
+      supportEvents: false,
+      supportBonjour: false,
+      manfDescription: "Current State"
+	 });
+	}
+	
 	
 	// Motion Detector
 	
@@ -550,7 +582,8 @@ HomeMaticGenericChannel.prototype = {
     {
       cType: types.TARGET_TEMPERATURE_CTYPE,
       onUpdate: function(value) {
-            that.delayed("set", "SET_TEMPERATURE", value,500);
+            //that.delayed("set", "SET_TEMPERATURE", value,500);
+            that.delayed("set", "MANU_MODE", value,500);
       },
       onRead: function(callback) {
 			that.query("SET_TEMPERATURE",callback);
@@ -603,10 +636,10 @@ HomeMaticGenericChannel.prototype = {
       return types.THERMOSTAT_STYPE;
 	}
 	
-	if (this.type=="SHUTTER_CONTACT") { 
+	if ((this.type=="SHUTTER_CONTACT") ||(this.type=="ROTARY_HANDLE_SENSOR")) { 
       return types.CONTACT_SENSOR_STYPE;
 	}
-	
+		
 	if (this.type=="MOTION_DETECTOR") {
 	  return types.MOTION_SENSOR_STYPE
 	}

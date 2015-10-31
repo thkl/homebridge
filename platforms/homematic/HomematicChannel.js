@@ -32,11 +32,11 @@ HomeMaticGenericChannel.prototype = {
     var that = this;
       
     if (this.state[dp] != undefined) {
-      callback(this.state[dp]);
+     if (callback!=undefined){callback(this.state[dp]);}
     } else {
 //      that.log("No cached Value found start fetching and send temp 0 back");
       this.remoteGetValue(dp);
-      callback(0);
+      if (callback!=undefined){callback(0);}
     }
 
   },
@@ -78,9 +78,7 @@ HomeMaticGenericChannel.prototype = {
 	// Check custom Mapping from HM to HomeKit
     var map = this.datapointMappings[dp];
     if (map != undefined) {
-      this.log("Mapping found for " + dp);
       if (map[value]!=undefined) {
-         this.log("Mapping found for " + dp + " " + value);
          value = map[value];
       }
     }
@@ -109,14 +107,14 @@ HomeMaticGenericChannel.prototype = {
   },
 
   command: function(mode,dp,value,callback) {
- 
+   
    if (this.eventupdate==true) {
     return;
    }
    var that = this;
 
    if (mode == "set") {
-        //this.log("Send " + value + " to Datapoint " + dp + " at " + that.adress);
+        this.log("Send " + value + " to Datapoint " + dp + " at " + that.adress);
 		that.platform.setValue(that.adress,dp,value);
    }
   },
@@ -582,11 +580,15 @@ HomeMaticGenericChannel.prototype = {
     {
       cType: types.TARGET_TEMPERATURE_CTYPE,
       onUpdate: function(value) {
-            //that.delayed("set", "SET_TEMPERATURE", value,500);
-            that.delayed("set", "MANU_MODE", value,500);
+            if (that.state["CONTROL_MODE"]!=1) {
+              that.command("set", "MANU_MODE", value);
+            } else {
+            that.delayed("set", "SET_TEMPERATURE", value,500);
+            }
       },
       onRead: function(callback) {
 			that.query("SET_TEMPERATURE",callback);
+			that.query("CONTROL_MODE",undefined);
 			
       },
       onRegister: function(characteristic) { 
@@ -636,7 +638,7 @@ HomeMaticGenericChannel.prototype = {
       return types.THERMOSTAT_STYPE;
 	}
 	
-	if ((this.type=="SHUTTER_CONTACT") ||(this.type=="ROTARY_HANDLE_SENSOR")) { 
+	if ((this.type=="SHUTTER_CONTACT") || (this.type=="ROTARY_HANDLE_SENSOR")) { 
       return types.CONTACT_SENSOR_STYPE;
 	}
 		

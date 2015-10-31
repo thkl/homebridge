@@ -117,6 +117,12 @@ HomeMaticGenericChannel.prototype = {
         this.log("Send " + value + " to Datapoint " + dp + " at " + that.adress);
 		that.platform.setValue(that.adress,dp,value);
    }
+
+   if (mode == "setrega") {
+        this.log("Send " + value + " to Datapoint " + dp + " at " + that.adress);
+		that.platform.setRegaValue(that.adress,dp,value);
+   }
+
   },
 
   informationCharacteristics: function() {
@@ -581,9 +587,9 @@ HomeMaticGenericChannel.prototype = {
       cType: types.TARGET_TEMPERATURE_CTYPE,
       onUpdate: function(value) {
             if (that.state["CONTROL_MODE"]!=1) {
-              that.command("set", "MANU_MODE", value);
+              that.delayed("setrega", "MANU_MODE",value,500);
             } else {
-            that.delayed("set", "SET_TEMPERATURE", value,500);
+              that.delayed("set", "SET_TEMPERATURE", value,500);
             }
       },
       onRead: function(callback) {

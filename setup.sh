@@ -69,7 +69,36 @@ sudo cp -R * /usr/local/
 
 info "Cloning Repository"
 cd /home/pi
-git clone -b xmlrpc --single-branch https://github.com/thkl/homebridge.git 
+
+
+VERSION=$(whiptail --menu "Which Version do you want to install" 20 60 10 \
+      "0" "Homebridge nfarina Original Version" \
+      "1" "Homebridge thkl Homematic Fork STABLE" \
+      "2" "Homebridge thkl Homematic Fork BETA-Version" \
+      3>&1 1>&2 2>&3)
+      
+    if [ $? -eq 0 ]; then  
+
+	  case "${VERSION}" in
+
+         0)
+          git clone -b master --single-branch https://github.com/nfarina/homebridge.git
+         ;;
+         
+         
+         1)
+          git clone -b master --single-branch https://github.com/thkl/homebridge.git
+         ;;
+      	
+		
+		 2)
+          git clone -b xmlrpc --single-branch https://github.com/thkl/homebridge.git
+         ;;
+         
+       esac
+
+    fi
+
 cd homebridge
 
 info "Installing Node Modules"
@@ -79,7 +108,7 @@ info "Setup"
 
 hazconfig="$(cat /home/pi/homebridge/config.json| grep 'bridge' | wc -l)"
 if [ "$hazconfig" = "0" ]; then
-  
+
   CCUIP=$(whiptail --inputbox "Please enter your CCU IP" 20 60 "000.000.000.000" 3>&1 1>&2 2>&3)
   if [ $? -eq 0 ]; then
    echo "{\"bridge\": {\"name\": \"Homebridge\", \"username\": \"CC:22:3D:E3:CE:30\",\"port\": 51826,\"pin\": \"031-45-154\"}," >> /home/pi/homebridge/config.json;

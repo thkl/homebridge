@@ -7,9 +7,11 @@
 //     {
 //         "platform": "HomeMatic",
 //         "name": "HomeMatic",
+//  	   "ccu_ip": "192.168.1.1",
 //         "filter_device":[],
 //         "filter_channel":["BidCos-RF.KEQXXXXXXX:4", "BidCos-RF.LEQXXXXXXX:2"],
-//         "outlets":[ "BidCos-RF.KEQXXXXXXX:4","BidCos-RF.IEQXXXXXXX:1"]
+//         "outlets":[ "BidCos-RF.KEQXXXXXXX:4","BidCos-RF.IEQXXXXXXX:1"],
+//		   "doors":["BidCos-RF.KEQXXXXXXX:4"]
 // 
 //     }
 //

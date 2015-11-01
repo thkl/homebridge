@@ -644,6 +644,37 @@ HomeMaticGenericChannel.prototype = {
 	 });
 	}
 	
+	// Weather sensors
+
+	if (this.type=="WEATHER_TRANSMIT") { 
+	 cTypes.push(
+	 {  
+	 	cType: types.CURRENT_TEMPERATURE_CTYPE,
+        onRead: function(callback) {that.query("TEMPERATURE",callback);},
+        onRegister: function(characteristic) { 
+            that.currentStateCharacteristic["TEMPERATURE"] = characteristic;
+            characteristic.eventEnabled = true;
+            that.remoteGetValue("TEMPERATURE");
+        },
+      perms: ["pr","ev"],format: "int",initialValue: 0,supportEvents: false,
+      supportBonjour: false,manfDescription: "Current Temperature Unit",unit: "celsius"
+	 },
+
+	 {  
+	 	cType: types.CURRENT_RELATIVE_HUMIDITY_CTYPE,
+        onRead: function(callback) {that.query("HUMIDITY",callback);},
+        onRegister: function(characteristic) { 
+            that.currentStateCharacteristic["HUMIDITY"] = characteristic;
+            characteristic.eventEnabled = true;
+            that.remoteGetValue("HUMIDITY");
+        },
+      perms: ["pr","ev"],format: "int",initialValue: 20,supportEvents: false,
+      supportBonjour: false,manfDescription: "Current Humidity",unit: "%"
+	 }
+	 );
+	}
+	
+	
 	// Heating Device
 	
 	if ((this.type=="CLIMATECONTROL_RT_TRANSCEIVER") || (this.type=="THERMALCONTROL_TRANSMIT")) {
@@ -765,6 +796,11 @@ HomeMaticGenericChannel.prototype = {
 	
 	if (this.type=="SMOKE_DETECTOR") {
 	  return "00000087-0000-1000-8000-0026BB765291";
+	}
+
+
+	if (this.type=="WEATHER_TRANSMIT") {
+	  return types.TEMPERATURE_SENSOR_STYPE;
 	}
 	
 	

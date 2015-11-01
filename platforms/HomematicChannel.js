@@ -588,8 +588,9 @@ HomeMaticGenericChannel.prototype = {
       onUpdate: function(value) {
             if (that.state["CONTROL_MODE"]!=1) {
               that.delayed("setrega", "MANU_MODE",value,500);
+              that.state["CONTROL_MODE"]=1; // set to Manual Mode
             } else {
-              that.delayed("set", "SET_TEMPERATURE", value,500);
+              that.delayed("setrega", "SET_TEMPERATURE", value,500);
             }
       },
       onRead: function(callback) {
@@ -601,6 +602,7 @@ HomeMaticGenericChannel.prototype = {
             that.currentStateCharacteristic["SET_TEMPERATURE"] = characteristic;
             characteristic.eventEnabled = true;
             that.remoteGetValue("SET_TEMPERATURE");
+            that.remoteGetValue("CONTROL_MODE");
       },
       perms: ["pw","pr","ev"],format: "double",
       initialValue: that.dpvalue("SET_TEMPERATURE",16),

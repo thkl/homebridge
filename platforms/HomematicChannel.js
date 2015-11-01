@@ -475,8 +475,41 @@ HomeMaticGenericChannel.prototype = {
     // Simple Contact (Magnet)
     
     if (this.type=="SHUTTER_CONTACT") { 
+	 // Marked as Door ? 
+	 if (this.special == "DOOR") {
+	 
 	 cTypes.push(
-	 {  
+	 	{  
+	 	cType: "0000000E-0000-1000-8000-0026BB765291",
+            
+        onRead: function(callback) {
+            that.query("STATE",callback);
+        },
+        
+        onRegister: function(characteristic) { 
+	        that.addValueMapping("STATE","true",0);
+            that.addValueMapping("STATE","false",1);
+			that.currentStateCharacteristic["STATE"] = characteristic;
+            characteristic.eventEnabled = true;
+            that.remoteGetValue("STATE");
+        },
+      
+      perms: ["pr","ev"],
+      format: "int",
+      initialValue: that.dpvalue("STATE",0),
+      supportEvents: false,
+      supportBonjour: false,
+      manfDescription: "Current State ",
+      designedMinValue: 0,
+      designedMaxValue: 4,
+      designedMinStep: 1
+	 });
+	 
+	 
+	 } else {
+	 	
+	 cTypes.push(
+	 	{  
 	 	cType: types.CONTACT_SENSOR_STATE_CTYPE,
             
         onRead: function(callback) {
@@ -496,10 +529,45 @@ HomeMaticGenericChannel.prototype = {
       supportBonjour: false,
       manfDescription: "Current State"
 	 });
+	 }
+	
 	}
 	
 	// Rotary Handle 
     if (this.type=="ROTARY_HANDLE_SENSOR") { 
+	
+	if (this.special == "DOOR") {
+	 
+	 cTypes.push(
+	 	{  
+	 	cType: "0000000E-0000-1000-8000-0026BB765291",
+            
+        onRead: function(callback) {
+            that.query("STATE",callback);
+        },
+        
+        onRegister: function(characteristic) { 
+	        that.addValueMapping("STATE","0",1);
+	        that.addValueMapping("STATE","1",0);
+	        that.addValueMapping("STATE","2",0);
+			that.currentStateCharacteristic["STATE"] = characteristic;
+            characteristic.eventEnabled = true;
+            that.remoteGetValue("STATE");
+        },
+      
+      perms: ["pr","ev"],
+      format: "int",
+      initialValue: that.dpvalue("STATE",0),
+      supportEvents: false,
+      supportBonjour: false,
+      manfDescription: "Current State ",
+      designedMinValue: 0,
+      designedMaxValue: 4,
+      designedMinStep: 1
+	 });
+	
+	 } else {
+	
 	 cTypes.push(
 	 {  
 	 	cType: types.CONTACT_SENSOR_STATE_CTYPE,
@@ -523,7 +591,7 @@ HomeMaticGenericChannel.prototype = {
       manfDescription: "Current State"
 	 });
 	}
-	
+	}
 	
 	// Motion Detector
 	
@@ -679,7 +747,11 @@ HomeMaticGenericChannel.prototype = {
 	}
 	
 	if ((this.type=="SHUTTER_CONTACT") || (this.type=="ROTARY_HANDLE_SENSOR")) { 
-      return types.CONTACT_SENSOR_STYPE;
+      if (this.special=="DOOR") {
+          return "5243F2EA-006C-4D68-83A0-4AF6F606136C";
+      } else {
+	      return types.CONTACT_SENSOR_STYPE;
+      }
 	}
 		
 	if (this.type=="MOTION_DETECTOR") {

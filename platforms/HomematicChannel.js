@@ -12,6 +12,7 @@ function HomeMaticGenericChannel(log,platform, id ,name, type ,adress,special) {
   this.special  = special;
   this.currentStateCharacteristic = [];
   this.datapointMappings = [];
+  this.timer = [];
 }
 
 
@@ -96,14 +97,20 @@ HomeMaticGenericChannel.prototype = {
     return;
    }
    
-    var timer = this.delayed[delay];
-    if( timer ) {
-      clearTimeout( timer );
+    if ( this.timer[dp]!=undefined ) {
+      clearTimeout(this.timer[dp]);
+      this.timer[dp] = undefined;
     }
-
+   
+   
     this.log(this.name + " delaying command "+mode + " " + dp +" with value " + value);
     var that = this;
-    this.delayed[delay] = setTimeout( function(){clearTimeout(that.delayed[delay]);that.command(mode,dp,value)}, delay?delay:100 );
+    
+    this.timer[dp] = setTimeout( function(){
+      clearTimeout(that.timer[dp]);
+      that.timer[dp] = undefined;
+      that.command(mode,dp,value)
+     }, delay?delay:100 );
   },
 
   command: function(mode,dp,value,callback) {

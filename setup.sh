@@ -45,6 +45,7 @@ sudo dpkg-reconfigure -f noninteractive tzdata
 
 info "Setting up Hostname"
 echo 'Homebridge' | sudo tee /etc/hostname
+echo '127.0.0.1  Homebridge' | sudo tee /etc/hosts
 
 info "Cleaning up"
 sudo dpkg --configure -a

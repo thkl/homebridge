@@ -32,12 +32,21 @@ HomeMaticGenericChannel.prototype = {
   query: function(dp,callback) {
     var that = this;
       
+      
+    if (this.adress.indexOf("VirtualDevices.") > -1) {
+     // Remove cached Date from Virtual Devices cause the do not update over rpc
+     this.state[dp] = undefined;
+     
+    }
+    
     if (this.state[dp] != undefined) {
      if (callback!=undefined){callback(this.state[dp]);}
     } else {
 //      that.log("No cached Value found start fetching and send temp 0 back");
-      this.remoteGetValue(dp);
-      if (callback!=undefined){callback(0);}
+      this.remoteGetValue(dp, function(value) {
+         if (callback!=undefined){callback(value);}
+      });
+      
     }
 
   },
@@ -50,13 +59,16 @@ HomeMaticGenericChannel.prototype = {
     }
   },
 
-  remoteGetValue:function(dp) {
+  remoteGetValue:function(dp,callback) {
       var that = this;
   	  that.platform.getValue(that.adress,dp,function(newValue) {
   	    that.log("Remote Value Response for " + that.adress + "." + dp + "->" + newValue);
   	    that.eventupdate = true;
   	    that.cache(dp,newValue);
   	    that.eventupdate = false;
+  	    if (callback!=undefined) {
+  	     callback(newValue);
+  	    }
   	  });
   },
 
@@ -128,6 +140,10 @@ HomeMaticGenericChannel.prototype = {
    if (mode == "setrega") {
         this.log("Send " + value + " to Datapoint " + dp + " at " + that.adress);
 		that.platform.setRegaValue(that.adress,dp,value);
+   }
+
+   if (mode == "sendregacommand") {
+		that.platform.sendRegaCommand(value,callback);
    }
 
   },
@@ -674,26 +690,70 @@ HomeMaticGenericChannel.prototype = {
 	 );
 	}
 	
-	
+	// Program Launcher
+	if (this.type=="PROGRAM_LAUNCHER") { 
+	 cTypes.push(
+	 {  
+	 	cType: "5E0115D7-7594-4846-AFB7-F456389E81EC",
+
+        onRead: function(callback) {
+          that.log("Reading PRG");
+            callback(0);
+        },
+        
+        onUpdate: function(value) {
+         if (value==1) {
+          that.command("sendregacommand","","var x=dom.GetObject(\""+that.name+"\");if (x) {x.ProgramExecute();}",function() {
+           setTimeout(function(){
+			   that.event("STATE",0);	
+         	   }, 1000 );
+          });
+         }
+        },    
+        
+        onRegister: function(characteristic) { 
+            that.currentStateCharacteristic["STATE"] = characteristic;
+            characteristic.eventEnabled = true;
+        },
+
+      perms: ["ev","pr","pw"],
+      format: "bool",
+      initialValue: 0,
+      supportEvents: false,
+      supportBonjour: false,
+      manfDescription: "Program Launcher"
+	 });
+	}
+
+
 	// Heating Device
 	
 	if ((this.type=="CLIMATECONTROL_RT_TRANSCEIVER") || (this.type=="THERMALCONTROL_TRANSMIT")) {
     
-    cTypes.push({
-      cType: types.NAME_CTYPE,onUpdate: null,perms: ["pr"],format: "string",
-      initialValue: this.name,supportEvents: true,supportBonjour: false,manfDescription: "Name of service",designedMaxLength: 255
-    },
-	
+    cTypes.push(	
 	{
       cType: types.CURRENTHEATINGCOOLING_CTYPE,onUpdate: null,
+      onRead: function(callback) {
+ 		var mode = (that.state["SET_TEMPERATURE"] == 4.5)?0:1;
+ 		callback(mode);
+      },
       perms: ["pr"],format: "int",initialValue: 1,supportEvents: false,
-      supportBonjour: false,manfDescription: "Current Mode",designedMaxLength: 1,designedMinValue: 1,designedMaxValue: 1,designedMinStep: 1
+      supportBonjour: false,manfDescription: "Current Mode",designedMaxLength: 1,designedMinValue: 0,designedMaxValue: 1,designedMinStep: 1
     },
   
     {
-      cType: types.TARGETHEATINGCOOLING_CTYPE,onUpdate: null,perms: ["pw","pr"],
+      cType: types.TARGETHEATINGCOOLING_CTYPE,
+      onUpdate: function(value) {
+       if (value==0) {
+		   that.delayed("setrega", "SET_TEMPERATURE", 4.5,500);
+		} else {
+		   that.delayed("setrega", "SET_TEMPERATURE", 21 ,500);
+       }      
+      },
+      
+      perms: ["pw","pr"],
       format: "int",initialValue: 1,supportEvents: false,supportBonjour: false,manfDescription: "Target Mode",
-      designedMinValue: 1,designedMaxValue: 1,designedMinStep: 1
+      designedMinValue: 0,designedMaxValue: 1,designedMinStep: 1
     },
     
     {
@@ -803,11 +863,21 @@ HomeMaticGenericChannel.prototype = {
 	  return types.TEMPERATURE_SENSOR_STYPE;
 	}
 	
+	if (this.type=="PROGRAM_LAUNCHER") {
+	  return "B7F46B4D-3D69-4804-8114-393F257D4039";
+	}
 	
   },
 
   getServices: function() {
     var that = this;
+    
+    if (this.sType()==undefined) {
+     console.log(this.name + " has no Service Type .. ");
+    process.exit(1);
+
+    }
+    
     var services = [{
       sType: types.ACCESSORY_INFORMATION_STYPE,
       characteristics: this.informationCharacteristics(),

@@ -53,7 +53,8 @@ RegaRequest.prototype = {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
         "Content-Length": script.length
-      }
+      },
+      timeout: 20
     };
 
     var post_req = http.request(post_options, function(res) {
@@ -265,6 +266,8 @@ function HomeMaticPlatform(log, config) {
   this.outlets = config["outlets"];
 
   this.doors = config["doors"];
+
+  this.programs = config["programs"];
   
   this.sendQueue = [];
   this.timer = 0;
@@ -337,10 +340,13 @@ HomeMaticPlatform.prototype = {
 
         });
 
-        /*
-                      				    var accessory = new HomeMaticGenericChannel(that.log, that, "1234" , "DummyKM" , "SMOKE_DETECTOR" , "1234");
-        				                that.foundAccessories.push(accessory);
-
+        if (that.programs!=undefined) {
+          that.programs.map(function(program){
+            var accessory = new HomeMaticGenericChannel(that.log, that, "1234" , program , "PROGRAM_LAUNCHER" , "1234");
+        	that.foundAccessories.push(accessory);
+          });
+        }
+/*
                       				    accessory = new HomeMaticGenericChannel(that.log, that, "5678" , "DummyBLIND" , "BLIND" , "5678");
         				                that.foundAccessories.push(accessory);
                   			  
@@ -372,6 +378,18 @@ HomeMaticPlatform.prototype = {
       var rega = new RegaRequest(this.log, this.ccuIP);
       rega.setValue(channel, datapoint, value);
       return;
+  },
+
+
+  sendRegaCommand: function(command,callback) {
+      var rega = new RegaRequest(this.log, this.ccuIP);
+      var that = this;
+      rega.script(command, function(data) {
+		if (callback!=undefined) {
+		 callback();
+		}
+      });
+	 return;
   },
 
   getValue: function(channel, datapoint, callback) {

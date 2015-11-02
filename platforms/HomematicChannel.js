@@ -36,23 +36,24 @@ HomeMaticGenericChannel.prototype = {
         
     if (this.state[dp] != undefined) {
      if (callback!=undefined){callback(this.state[dp]);}
-    
-    
     } else {
 //      that.log("No cached Value found start fetching and send temp 0 back");
       this.remoteGetValue(dp, function(value) {
         
       });
       if (callback!=undefined){callback(0);}
-      
-      
     }
 
-    if (this.adress.indexOf("VirtualDevices.") > -1) {
-     // Remove cached Date from Virtual Devices cause the do not update over rpc
-     this.state[dp] = undefined;
-    }
+  },
 
+  cleanVirtualDevice:function(dp) {
+     if (this.adress.indexOf("VirtualDevices.") > -1) {
+    	 // Remove cached Date from Virtual Devices cause the do not update over rpc
+	     this.state[dp] = undefined;
+    }
+    this.remoteGetValue(dp, function(value) {
+        
+    });
   },
 
   dpvalue:function(dp,fallback) {
@@ -741,21 +742,40 @@ HomeMaticGenericChannel.prototype = {
  		var mode = (that.state["SET_TEMPERATURE"] == 4.5)?0:1;
  		callback(mode);
       },
-      perms: ["pr"],format: "int",initialValue: 1,supportEvents: false,
+      
+      onRegister: function(characteristic) { 
+            that.currentStateCharacteristic["MODE"] = characteristic;
+            characteristic.eventEnabled = true;
+      },
+      
+      perms: ["pr","ev"],format: "int",initialValue: 1,supportEvents: false,
       supportBonjour: false,manfDescription: "Current Mode",designedMaxLength: 1,designedMinValue: 0,designedMaxValue: 1,designedMinStep: 1
     },
   
     {
       cType: types.TARGETHEATINGCOOLING_CTYPE,
+      
+      onRead: function(callback) {
+ 		var mode = (that.state["SET_TEMPERATURE"] == 4.5)?0:1;
+ 		callback(mode);
+      },
+      
       onUpdate: function(value) {
        if (value==0) {
-		   that.delayed("setrega", "SET_TEMPERATURE", 4.5,500);
+		   that.command("setrega", "SET_TEMPERATURE", 4.5);
+           that.cleanVirtualDevice("SET_TEMPERATURE");
 		} else {
-		   that.delayed("setrega", "SET_TEMPERATURE", 21 ,500);
+		   that.command("setrega", "SET_TEMPERATURE", 21);
+           that.cleanVirtualDevice("SET_TEMPERATURE");
        }      
       },
       
-      perms: ["pw","pr"],
+       onRegister: function(characteristic) { 
+            that.currentStateCharacteristic["MODE"] = characteristic;
+            characteristic.eventEnabled = true;
+      },
+
+      perms: ["pw","pr","ev"],
       format: "int",initialValue: 1,supportEvents: false,supportBonjour: false,manfDescription: "Target Mode",
       designedMinValue: 0,designedMaxValue: 1,designedMinStep: 1
     },
@@ -771,7 +791,7 @@ HomeMaticGenericChannel.prototype = {
       onRegister: function(characteristic) { 
             that.currentStateCharacteristic["ACTUAL_TEMPERATURE"] = characteristic;
             characteristic.eventEnabled = true;
-            that.remoteGetValue("ACTUAL_TEMPERATURE");
+            that.cleanVirtualDevice("ACTUAL_TEMPERATURE");
       },
       perms: ["pw","pr","ev"], perms: ["pr"],format: "double",
       initialValue: that.dpvalue("ACTUAL_TEMPERATURE",20),
@@ -789,20 +809,32 @@ HomeMaticGenericChannel.prototype = {
             }
       },
       onRead: function(callback) {
-			that.query("SET_TEMPERATURE",callback);
+			that.query("SET_TEMPERATURE",function(value) {
+			 if (value<10) {
+			 	value=10;
+			 }
+			 if (value==4.5){
+				 that.currentStateCharacteristic["MODE"].updateValue(0, null);
+			 } else {
+			 	 that.currentStateCharacteristic["MODE"].updateValue(1, null);
+			 }
+			 callback(value);
+			});
+			
 			that.query("CONTROL_MODE",undefined);
 			
       },
       onRegister: function(characteristic) { 
             that.currentStateCharacteristic["SET_TEMPERATURE"] = characteristic;
             characteristic.eventEnabled = true;
-            that.remoteGetValue("SET_TEMPERATURE");
-            that.remoteGetValue("CONTROL_MODE");
+            that.state["SET_TEMPERATURE"] = undefined;
+            that.cleanVirtualDevice("SET_TEMPERATURE");
+            that.cleanVirtualDevice("CONTROL_MODE");
       },
       perms: ["pw","pr","ev"],format: "double",
       initialValue: that.dpvalue("SET_TEMPERATURE",16),
       supportEvents: false,supportBonjour: false, manfDescription: "Target Temperature",
-      designedMinValue: 16,designedMaxValue: 38,designedMinStep: 1,unit: "celsius"
+      designedMinValue: 10,designedMaxValue: 38,designedMinStep: 1,unit: "celsius"
     },
     
     {

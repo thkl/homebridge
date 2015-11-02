@@ -667,7 +667,7 @@ HomeMaticGenericChannel.prototype = {
 	
 	// Weather sensors
 
-	if (this.type=="WEATHER_TRANSMIT") { 
+	if ((this.type=="WEATHER_TRANSMIT") || (this.type=="WEATHER")) { 
 	 cTypes.push(
 	 {  
 	 	cType: types.CURRENT_TEMPERATURE_CTYPE,
@@ -895,7 +895,7 @@ HomeMaticGenericChannel.prototype = {
 	}
 
 
-	if (this.type=="WEATHER_TRANSMIT") {
+	if ((this.type=="WEATHER_TRANSMIT") || (this.type=="WEATHER")) {
 	  return types.TEMPERATURE_SENSOR_STYPE;
 	}
 	

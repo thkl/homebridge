@@ -33,20 +33,24 @@ HomeMaticGenericChannel.prototype = {
     var that = this;
       
       
-    if (this.adress.indexOf("VirtualDevices.") > -1) {
-     // Remove cached Date from Virtual Devices cause the do not update over rpc
-     this.state[dp] = undefined;
-     
-    }
-    
+        
     if (this.state[dp] != undefined) {
      if (callback!=undefined){callback(this.state[dp]);}
+    
+    
     } else {
 //      that.log("No cached Value found start fetching and send temp 0 back");
       this.remoteGetValue(dp, function(value) {
-         if (callback!=undefined){callback(value);}
+        
       });
+      if (callback!=undefined){callback(0);}
       
+      
+    }
+
+    if (this.adress.indexOf("VirtualDevices.") > -1) {
+     // Remove cached Date from Virtual Devices cause the do not update over rpc
+     this.state[dp] = undefined;
     }
 
   },

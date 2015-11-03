@@ -296,7 +296,7 @@ HomeMaticGenericChannel.prototype = {
         cType: types.TARGET_LOCK_MECHANISM_STATE_CTYPE,
         
         onUpdate: function(value) {
-            that.command("set","STATE",(value==1)?"true":"false")
+            that.command("set","STATE",(value==1)?"false":"true")
         },
         
         onRead: function(callback) {
@@ -667,7 +667,7 @@ HomeMaticGenericChannel.prototype = {
 	
 	// Weather sensors
 
-	if ((this.type=="WEATHER_TRANSMIT") || (this.type=="WEATHER")) { 
+	if (this.type=="WEATHER_TRANSMIT") { 
 	 cTypes.push(
 	 {  
 	 	cType: types.CURRENT_TEMPERATURE_CTYPE,
@@ -895,7 +895,7 @@ HomeMaticGenericChannel.prototype = {
 	}
 
 
-	if ((this.type=="WEATHER_TRANSMIT") || (this.type=="WEATHER")) {
+	if (this.type=="WEATHER_TRANSMIT") {
 	  return types.TEMPERATURE_SENSOR_STYPE;
 	}
 	

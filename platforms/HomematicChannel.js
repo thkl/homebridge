@@ -765,7 +765,7 @@ HomeMaticGenericChannel.prototype = {
 		   that.command("setrega", "SET_TEMPERATURE", 4.5);
            that.cleanVirtualDevice("SET_TEMPERATURE");
 		} else {
-		   that.command("setrega", "SET_TEMPERATURE", 21);
+		   //that.command("setrega", "SET_TEMPERATURE", 21);
            that.cleanVirtualDevice("SET_TEMPERATURE");
        }      
       },

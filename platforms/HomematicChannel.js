@@ -12,6 +12,7 @@ function HomeMaticGenericChannel(log,platform, id ,name, type ,adress,special) {
   this.special  = special;
   this.currentStateCharacteristic = [];
   this.datapointMappings = [];
+  this.timer = [];
 }
 
 
@@ -31,14 +32,28 @@ HomeMaticGenericChannel.prototype = {
   query: function(dp,callback) {
     var that = this;
       
+      
+        
     if (this.state[dp] != undefined) {
      if (callback!=undefined){callback(this.state[dp]);}
     } else {
 //      that.log("No cached Value found start fetching and send temp 0 back");
-      this.remoteGetValue(dp);
+      this.remoteGetValue(dp, function(value) {
+        
+      });
       if (callback!=undefined){callback(0);}
     }
 
+  },
+
+  cleanVirtualDevice:function(dp) {
+     if (this.adress.indexOf("VirtualDevices.") > -1) {
+    	 // Remove cached Date from Virtual Devices cause the do not update over rpc
+	     this.state[dp] = undefined;
+    }
+    this.remoteGetValue(dp, function(value) {
+        
+    });
   },
 
   dpvalue:function(dp,fallback) {
@@ -49,13 +64,16 @@ HomeMaticGenericChannel.prototype = {
     }
   },
 
-  remoteGetValue:function(dp) {
+  remoteGetValue:function(dp,callback) {
       var that = this;
   	  that.platform.getValue(that.adress,dp,function(newValue) {
   	    that.log("Remote Value Response for " + that.adress + "." + dp + "->" + newValue);
   	    that.eventupdate = true;
   	    that.cache(dp,newValue);
   	    that.eventupdate = false;
+  	    if (callback!=undefined) {
+  	     callback(newValue);
+  	    }
   	  });
   },
 
@@ -96,14 +114,20 @@ HomeMaticGenericChannel.prototype = {
     return;
    }
    
-    var timer = this.delayed[delay];
-    if( timer ) {
-      clearTimeout( timer );
+    if ( this.timer[dp]!=undefined ) {
+      clearTimeout(this.timer[dp]);
+      this.timer[dp] = undefined;
     }
-
+   
+   
     this.log(this.name + " delaying command "+mode + " " + dp +" with value " + value);
     var that = this;
-    this.delayed[delay] = setTimeout( function(){clearTimeout(that.delayed[delay]);that.command(mode,dp,value)}, delay?delay:100 );
+    
+    this.timer[dp] = setTimeout( function(){
+      clearTimeout(that.timer[dp]);
+      that.timer[dp] = undefined;
+      that.command(mode,dp,value)
+     }, delay?delay:100 );
   },
 
   command: function(mode,dp,value,callback) {
@@ -121,6 +145,10 @@ HomeMaticGenericChannel.prototype = {
    if (mode == "setrega") {
         this.log("Send " + value + " to Datapoint " + dp + " at " + that.adress);
 		that.platform.setRegaValue(that.adress,dp,value);
+   }
+
+   if (mode == "sendregacommand") {
+		that.platform.sendRegaCommand(value,callback);
    }
 
   },
@@ -268,7 +296,7 @@ HomeMaticGenericChannel.prototype = {
         cType: types.TARGET_LOCK_MECHANISM_STATE_CTYPE,
         
         onUpdate: function(value) {
-            that.command("set","STATE",(value==1)?"true":"false")
+            that.command("set","STATE",(value==1)?"false":"true")
         },
         
         onRead: function(callback) {
@@ -468,8 +496,41 @@ HomeMaticGenericChannel.prototype = {
     // Simple Contact (Magnet)
     
     if (this.type=="SHUTTER_CONTACT") { 
+	 // Marked as Door ? 
+	 if (this.special == "DOOR") {
+	 
 	 cTypes.push(
-	 {  
+	 	{  
+	 	cType: "0000000E-0000-1000-8000-0026BB765291",
+            
+        onRead: function(callback) {
+            that.query("STATE",callback);
+        },
+        
+        onRegister: function(characteristic) { 
+	        that.addValueMapping("STATE","true",0);
+            that.addValueMapping("STATE","false",1);
+			that.currentStateCharacteristic["STATE"] = characteristic;
+            characteristic.eventEnabled = true;
+            that.remoteGetValue("STATE");
+        },
+      
+      perms: ["pr","ev"],
+      format: "int",
+      initialValue: that.dpvalue("STATE",0),
+      supportEvents: false,
+      supportBonjour: false,
+      manfDescription: "Current State ",
+      designedMinValue: 0,
+      designedMaxValue: 4,
+      designedMinStep: 1
+	 });
+	 
+	 
+	 } else {
+	 	
+	 cTypes.push(
+	 	{  
 	 	cType: types.CONTACT_SENSOR_STATE_CTYPE,
             
         onRead: function(callback) {
@@ -489,10 +550,45 @@ HomeMaticGenericChannel.prototype = {
       supportBonjour: false,
       manfDescription: "Current State"
 	 });
+	 }
+	
 	}
 	
 	// Rotary Handle 
     if (this.type=="ROTARY_HANDLE_SENSOR") { 
+	
+	if (this.special == "DOOR") {
+	 
+	 cTypes.push(
+	 	{  
+	 	cType: "0000000E-0000-1000-8000-0026BB765291",
+            
+        onRead: function(callback) {
+            that.query("STATE",callback);
+        },
+        
+        onRegister: function(characteristic) { 
+	        that.addValueMapping("STATE","0",1);
+	        that.addValueMapping("STATE","1",0);
+	        that.addValueMapping("STATE","2",0);
+			that.currentStateCharacteristic["STATE"] = characteristic;
+            characteristic.eventEnabled = true;
+            that.remoteGetValue("STATE");
+        },
+      
+      perms: ["pr","ev"],
+      format: "int",
+      initialValue: that.dpvalue("STATE",0),
+      supportEvents: false,
+      supportBonjour: false,
+      manfDescription: "Current State ",
+      designedMinValue: 0,
+      designedMaxValue: 4,
+      designedMinStep: 1
+	 });
+	
+	 } else {
+	
 	 cTypes.push(
 	 {  
 	 	cType: types.CONTACT_SENSOR_STATE_CTYPE,
@@ -516,7 +612,7 @@ HomeMaticGenericChannel.prototype = {
       manfDescription: "Current State"
 	 });
 	}
-	
+	}
 	
 	// Motion Detector
 	
@@ -569,25 +665,119 @@ HomeMaticGenericChannel.prototype = {
 	 });
 	}
 	
+	// Weather sensors
+
+	if (this.type=="WEATHER_TRANSMIT") { 
+	 cTypes.push(
+	 {  
+	 	cType: types.CURRENT_TEMPERATURE_CTYPE,
+        onRead: function(callback) {that.query("TEMPERATURE",callback);},
+        onRegister: function(characteristic) { 
+            that.currentStateCharacteristic["TEMPERATURE"] = characteristic;
+            characteristic.eventEnabled = true;
+            that.remoteGetValue("TEMPERATURE");
+        },
+      perms: ["pr","ev"],format: "int",initialValue: 0,supportEvents: false,
+      supportBonjour: false,manfDescription: "Current Temperature Unit",unit: "celsius"
+	 },
+
+	 {  
+	 	cType: types.CURRENT_RELATIVE_HUMIDITY_CTYPE,
+        onRead: function(callback) {that.query("HUMIDITY",callback);},
+        onRegister: function(characteristic) { 
+            that.currentStateCharacteristic["HUMIDITY"] = characteristic;
+            characteristic.eventEnabled = true;
+            that.remoteGetValue("HUMIDITY");
+        },
+      perms: ["pr","ev"],format: "int",initialValue: 20,supportEvents: false,
+      supportBonjour: false,manfDescription: "Current Humidity",unit: "%"
+	 }
+	 );
+	}
+	
+	// Program Launcher
+	if (this.type=="PROGRAM_LAUNCHER") { 
+	 cTypes.push(
+	 {  
+	 	cType: "5E0115D7-7594-4846-AFB7-F456389E81EC",
+
+        onRead: function(callback) {
+          that.log("Reading PRG");
+            callback(0);
+        },
+        
+        onUpdate: function(value) {
+         if (value==1) {
+          that.command("sendregacommand","","var x=dom.GetObject(\""+that.name+"\");if (x) {x.ProgramExecute();}",function() {
+           setTimeout(function(){
+			   that.event("STATE",0);	
+         	   }, 1000 );
+          });
+         }
+        },    
+        
+        onRegister: function(characteristic) { 
+            that.currentStateCharacteristic["STATE"] = characteristic;
+            characteristic.eventEnabled = true;
+        },
+
+      perms: ["ev","pr","pw"],
+      format: "bool",
+      initialValue: 0,
+      supportEvents: false,
+      supportBonjour: false,
+      manfDescription: "Program Launcher"
+	 });
+	}
+
+
 	// Heating Device
 	
 	if ((this.type=="CLIMATECONTROL_RT_TRANSCEIVER") || (this.type=="THERMALCONTROL_TRANSMIT")) {
     
-    cTypes.push({
-      cType: types.NAME_CTYPE,onUpdate: null,perms: ["pr"],format: "string",
-      initialValue: this.name,supportEvents: true,supportBonjour: false,manfDescription: "Name of service",designedMaxLength: 255
-    },
-	
+    cTypes.push(	
 	{
       cType: types.CURRENTHEATINGCOOLING_CTYPE,onUpdate: null,
-      perms: ["pr"],format: "int",initialValue: 1,supportEvents: false,
-      supportBonjour: false,manfDescription: "Current Mode",designedMaxLength: 1,designedMinValue: 1,designedMaxValue: 1,designedMinStep: 1
+      onRead: function(callback) {
+ 		var mode = (that.state["SET_TEMPERATURE"] == 4.5)?0:1;
+ 		callback(mode);
+      },
+      
+      onRegister: function(characteristic) { 
+            that.currentStateCharacteristic["MODE"] = characteristic;
+            characteristic.eventEnabled = true;
+      },
+      
+      perms: ["pr","ev"],format: "int",initialValue: 1,supportEvents: false,
+      supportBonjour: false,manfDescription: "Current Mode",designedMaxLength: 1,designedMinValue: 0,designedMaxValue: 1,designedMinStep: 1
     },
   
     {
-      cType: types.TARGETHEATINGCOOLING_CTYPE,onUpdate: null,perms: ["pw","pr"],
+      cType: types.TARGETHEATINGCOOLING_CTYPE,
+      
+      onRead: function(callback) {
+ 		var mode = (that.state["SET_TEMPERATURE"] == 4.5)?0:1;
+ 		callback(mode);
+      },
+      
+      onUpdate: function(value) {
+       if (value==0) {
+		   that.command("setrega", "SET_TEMPERATURE", 4.5);
+           that.cleanVirtualDevice("SET_TEMPERATURE");
+		} else {
+		   //that.command("setrega", "SET_TEMPERATURE", 21);
+           that.cleanVirtualDevice("SET_TEMPERATURE");
+       }      
+      },
+      
+       onRegister: function(characteristic) { 
+            that.currentStateCharacteristic["MODE"] = characteristic;
+            characteristic.eventEnabled = true;
+      },
+
+      perms: ["pw","pr","ev"],
       format: "int",initialValue: 1,supportEvents: false,supportBonjour: false,manfDescription: "Target Mode",
-      designedMinValue: 1,designedMaxValue: 1,designedMinStep: 1
+      designedMinValue: 0,designedMaxValue: 1,designedMinStep: 1
     },
     
     {
@@ -601,7 +791,7 @@ HomeMaticGenericChannel.prototype = {
       onRegister: function(characteristic) { 
             that.currentStateCharacteristic["ACTUAL_TEMPERATURE"] = characteristic;
             characteristic.eventEnabled = true;
-            that.remoteGetValue("ACTUAL_TEMPERATURE");
+            that.cleanVirtualDevice("ACTUAL_TEMPERATURE");
       },
       perms: ["pw","pr","ev"], perms: ["pr"],format: "double",
       initialValue: that.dpvalue("ACTUAL_TEMPERATURE",20),
@@ -619,20 +809,32 @@ HomeMaticGenericChannel.prototype = {
             }
       },
       onRead: function(callback) {
-			that.query("SET_TEMPERATURE",callback);
+			that.query("SET_TEMPERATURE",function(value) {
+			 if (value<10) {
+			 	value=10;
+			 }
+			 if (value==4.5){
+				 that.currentStateCharacteristic["MODE"].updateValue(0, null);
+			 } else {
+			 	 that.currentStateCharacteristic["MODE"].updateValue(1, null);
+			 }
+			 callback(value);
+			});
+			
 			that.query("CONTROL_MODE",undefined);
 			
       },
       onRegister: function(characteristic) { 
             that.currentStateCharacteristic["SET_TEMPERATURE"] = characteristic;
             characteristic.eventEnabled = true;
-            that.remoteGetValue("SET_TEMPERATURE");
-            that.remoteGetValue("CONTROL_MODE");
+            that.state["SET_TEMPERATURE"] = undefined;
+            that.cleanVirtualDevice("SET_TEMPERATURE");
+            that.cleanVirtualDevice("CONTROL_MODE");
       },
       perms: ["pw","pr","ev"],format: "double",
       initialValue: that.dpvalue("SET_TEMPERATURE",16),
       supportEvents: false,supportBonjour: false, manfDescription: "Target Temperature",
-      designedMinValue: 16,designedMaxValue: 38,designedMinStep: 1,unit: "celsius"
+      designedMinValue: 10,designedMaxValue: 38,designedMinStep: 1,unit: "celsius"
     },
     
     {
@@ -672,7 +874,11 @@ HomeMaticGenericChannel.prototype = {
 	}
 	
 	if ((this.type=="SHUTTER_CONTACT") || (this.type=="ROTARY_HANDLE_SENSOR")) { 
-      return types.CONTACT_SENSOR_STYPE;
+      if (this.special=="DOOR") {
+          return "5243F2EA-006C-4D68-83A0-4AF6F606136C";
+      } else {
+	      return types.CONTACT_SENSOR_STYPE;
+      }
 	}
 		
 	if (this.type=="MOTION_DETECTOR") {
@@ -687,12 +893,27 @@ HomeMaticGenericChannel.prototype = {
 	if (this.type=="SMOKE_DETECTOR") {
 	  return "00000087-0000-1000-8000-0026BB765291";
 	}
+
+
+	if (this.type=="WEATHER_TRANSMIT") {
+	  return types.TEMPERATURE_SENSOR_STYPE;
+	}
 	
+	if (this.type=="PROGRAM_LAUNCHER") {
+	  return "B7F46B4D-3D69-4804-8114-393F257D4039";
+	}
 	
   },
 
   getServices: function() {
     var that = this;
+    
+    if (this.sType()==undefined) {
+     console.log(this.name + " has no Service Type .. ");
+    process.exit(1);
+
+    }
+    
     var services = [{
       sType: types.ACCESSORY_INFORMATION_STYPE,
       characteristics: this.informationCharacteristics(),

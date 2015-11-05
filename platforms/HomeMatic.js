@@ -7,9 +7,11 @@
 //     {
 //         "platform": "HomeMatic",
 //         "name": "HomeMatic",
+//  	   "ccu_ip": "192.168.1.1",
 //         "filter_device":[],
 //         "filter_channel":["BidCos-RF.KEQXXXXXXX:4", "BidCos-RF.LEQXXXXXXX:2"],
-//         "outlets":[ "BidCos-RF.KEQXXXXXXX:4","BidCos-RF.IEQXXXXXXX:1"]
+//         "outlets":[ "BidCos-RF.KEQXXXXXXX:4","BidCos-RF.IEQXXXXXXX:1"],
+//		   "doors":["BidCos-RF.KEQXXXXXXX:4"]
 // 
 //     }
 //
@@ -51,7 +53,8 @@ RegaRequest.prototype = {
       headers: {
         "Content-Type": "application/x-www-form-urlencoded",
         "Content-Length": script.length
-      }
+      },
+      timeout: 60
     };
 
     var post_req = http.request(post_options, function(res) {
@@ -259,8 +262,13 @@ function HomeMaticPlatform(log, config) {
   this.ccuIP = config["ccu_ip"];
   this.filter_device = config["filter_device"];
   this.filter_channel = config["filter_channel"];
+  
   this.outlets = config["outlets"];
 
+  this.doors = config["doors"];
+
+  this.programs = config["programs"];
+  
   this.sendQueue = [];
   this.timer = 0;
 
@@ -310,8 +318,11 @@ HomeMaticPlatform.prototype = {
 
                
                   // Switch found
-                  // Check if marked as Outlet
-                  var special = (that.outlets.indexOf(ch.address) > -1) ? "OUTLET" : undefined;
+                  // Check if marked as Outlet or Door
+                  var special = undefined;
+                  if ((that.outlets!=undefined) && (that.outlets.indexOf(ch.address) > -1)) {special = "OUTLET";}
+                  if ((that.doors!=undefined) && (that.doors.indexOf(ch.address) > -1)) {special = "DOOR";}
+                  
                   var accessory = new HomeMaticGenericChannel(that.log, that, ch.id, ch.name, ch.type, ch.address, special);
                   if (accessory.sType()!=undefined) {
                   	// support exists for this channel
@@ -329,10 +340,13 @@ HomeMaticPlatform.prototype = {
 
         });
 
-        /*
-                      				    var accessory = new HomeMaticGenericChannel(that.log, that, "1234" , "DummyKM" , "SMOKE_DETECTOR" , "1234");
-        				                that.foundAccessories.push(accessory);
-
+        if (that.programs!=undefined) {
+          that.programs.map(function(program){
+            var accessory = new HomeMaticGenericChannel(that.log, that, "1234" , program , "PROGRAM_LAUNCHER" , "1234");
+        	that.foundAccessories.push(accessory);
+          });
+        }
+/*
                       				    accessory = new HomeMaticGenericChannel(that.log, that, "5678" , "DummyBLIND" , "BLIND" , "5678");
         				                that.foundAccessories.push(accessory);
                   			  
@@ -364,6 +378,18 @@ HomeMaticPlatform.prototype = {
       var rega = new RegaRequest(this.log, this.ccuIP);
       rega.setValue(channel, datapoint, value);
       return;
+  },
+
+
+  sendRegaCommand: function(command,callback) {
+      var rega = new RegaRequest(this.log, this.ccuIP);
+      var that = this;
+      rega.script(command, function(data) {
+		if (callback!=undefined) {
+		 callback();
+		}
+      });
+	 return;
   },
 
   getValue: function(channel, datapoint, callback) {

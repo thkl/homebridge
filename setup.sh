@@ -147,3 +147,11 @@ echo '127.0.0.1  Homebridge' | sudo tee /etc/hosts
 
 info "Done. If there are no error messages you are done."
 info "Please navigate to https://github.com/nfarina/homebridge for more informations."
+
+file="/home/pi/.homebridge/config.json"
+if [ -f "$file" ]
+then
+	info "Searching for more Plugins availavble :"
+	npm find homebridge-
+	info "You may install them with sudo npm install -g PLUGINNAME"
+fi

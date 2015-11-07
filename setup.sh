@@ -157,10 +157,6 @@ then
 
 	info "Start the Homebridge by typing homebridge"
 
-
-	info "Searching for more Plugins availavble (this may take some time)"
-	npm find homebridge-
-	info "You may install them with sudo npm install -g PLUGINNAME"
 else
 	info "Start the Homebridge by typing npm run start"
 

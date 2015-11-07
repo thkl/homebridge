@@ -127,9 +127,17 @@ fi
 whiptail --yesno "Would you like to start homebridge at boot by default?" $DEFAULT 20 60 2
 RET=$?
 if [ $RET -eq 0 ]; then
-  sudo cp /home/pi/homebridge/homebridge.txt /etc/init.d/homebridge
-  sudo chmod 755 /etc/init.d/homebridge
-  sudo update-rc.d homebridge defaults
+
+  file="/home/pi/.homebridge/config.json"
+  if [ -f "$file" ]
+  then
+    wget https://raw.githubusercontent.com/thkl/homebridge/xmlrpc/homebridge
+  	sudo cp /home/pi/homebridge/homebridge /etc/init.d/homebridge
+  else
+  	sudo cp /home/pi/homebridge/homebridge.txt /etc/init.d/homebridge
+  fi
+  	sudo chmod 755 /etc/init.d/homebridge
+	sudo update-rc.d homebridge defaults
 fi
 
 info "Done. If there are no error messages you are done."

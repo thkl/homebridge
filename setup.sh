@@ -141,3 +141,4 @@ if [ $RET -eq 0 ]; then
 fi
 
 info "Done. If there are no error messages you are done."
+info "Please navigate to https://github.com/nfarina/homebridge for more informations."

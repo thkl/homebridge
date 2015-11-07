@@ -135,7 +135,8 @@ if [ $RET -eq 0 ]; then
   if [ -f "$file" ]
   then
     wget https://raw.githubusercontent.com/thkl/homebridge/xmlrpc/homebridge
-  	sudo cp /home/pi/homebridge /etc/init.d/homebridge
+  	sudo mv /home/pi/homebridge /etc/init.d/homebridge
+  	
   else
   	sudo cp /home/pi/homebridge/homebridge.txt /etc/init.d/homebridge
   fi

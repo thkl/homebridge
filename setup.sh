@@ -82,7 +82,8 @@ VERSION=$(whiptail --menu "Which Version do you want to install" 20 60 10 \
 	  case "${VERSION}" in
 
          0)
-          sudo npm install -g homebridge
+          info "Installing Homebridge Node Modules"
+		  sudo npm install -g homebridge
           sudo npm install -g homebridge-homematic
           mkdir /home/pi/.homebridge
           CONFIG="/home/pi/.homebridge/config.json"
@@ -92,20 +93,23 @@ VERSION=$(whiptail --menu "Which Version do you want to install" 20 60 10 \
          1)
           git clone -b master --single-branch https://github.com/thkl/homebridge.git
           cd homebridge
+          info "Installing Node Modules"
+		  npm install
          ;;
       	
 		
 		 2)
           git clone -b xmlrpc --single-branch https://github.com/thkl/homebridge.git
           cd homebridge
-         ;;
+          info "Installing Node Modules"
+		  npm install
+		 ;;
          
        esac
 
     fi
 
-info "Installing Node Modules"
-npm install
+
 
 info "Setup"
 

@@ -72,7 +72,7 @@ cd /home/pi
 
 CONFIG = "/home/pi/homebridge/config.json"
 VERSION=$(whiptail --menu "Which Version do you want to install" 20 60 10 \
-      "0" "Homebridge nfarina New Plugin Version with Homematic Plugin" \
+      "0" "Homebridge nfarina Version with Homematic Plugin" \
       "1" "Homebridge thkl Old Homematic Fork" \
       "2" "Homebridge thkl Old Homematic Fork BETA-Version" \
       3>&1 1>&2 2>&3)
@@ -85,7 +85,7 @@ VERSION=$(whiptail --menu "Which Version do you want to install" 20 60 10 \
           sudo npm install -g homebridge
           sudo npm install -g homebridge-homematic
           mkdir /home/pi/.homebridge
-          CONFIG = "/home/pi/.homebridge/config.json"
+          CONFIG="/home/pi/.homebridge/config.json"
          ;;
          
          

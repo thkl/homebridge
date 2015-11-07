@@ -91,18 +91,18 @@ VERSION=$(whiptail --menu "Which Version do you want to install" 20 60 10 \
          
          1)
           git clone -b master --single-branch https://github.com/thkl/homebridge.git
+          cd homebridge
          ;;
       	
 		
 		 2)
           git clone -b xmlrpc --single-branch https://github.com/thkl/homebridge.git
+          cd homebridge
          ;;
          
        esac
 
     fi
-
-cd homebridge
 
 info "Installing Node Modules"
 npm install

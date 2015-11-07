@@ -45,7 +45,6 @@ sudo dpkg-reconfigure -f noninteractive tzdata
 
 info "Setting up Hostname"
 echo 'Homebridge' | sudo tee /etc/hostname
-echo '127.0.0.1  Homebridge' | sudo tee /etc/hosts
 
 info "Cleaning up"
 sudo dpkg --configure -a
@@ -139,6 +138,8 @@ if [ $RET -eq 0 ]; then
   	sudo chmod 755 /etc/init.d/homebridge
 	sudo update-rc.d homebridge defaults
 fi
+
+echo '127.0.0.1  Homebridge' | sudo tee /etc/hosts
 
 info "Done. If there are no error messages you are done."
 info "Please navigate to https://github.com/nfarina/homebridge for more informations."

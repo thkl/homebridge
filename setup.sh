@@ -66,10 +66,12 @@ tar -zxvf node-v0.12.1-linux-arm-pi.tar.gz
 cd node-v0.12.1-linux-arm-pi
 sudo cp -R * /usr/local/
 
+cd /home/pi
+info "Cleaning ..."
+rm node-v0.12.1-linux-arm-pi.tar.gz
+rm node-v0.12.1-linux-arm-pi -R
 
 info "Cloning Repository"
-cd /home/pi
-
 configfile="/home/pi/homebridge/config.json"
 VERSION=$(whiptail --menu "Which Version do you want to install" 20 60 10 \
       "0" "Homebridge nfarina Version with Homematic Plugin" \
@@ -152,7 +154,7 @@ info "Please navigate to https://github.com/nfarina/homebridge for more informat
 file="/home/pi/.homebridge/config.json"
 if [ -f "$file" ]
 then
-	info "Searching for more Plugins availavble :"
+	info "Searching for more Plugins availavble (this may take some time)"
 	npm find homebridge-
 	info "You may install them with sudo npm install -g PLUGINNAME"
 fi

@@ -71,49 +71,13 @@ info "Cleaning ..."
 rm node-v0.12.1-linux-arm-pi.tar.gz
 rm node-v0.12.1-linux-arm-pi -R
 
-info "Cloning Repository"
-configfile="/home/pi/homebridge/config.json"
-VERSION=$(whiptail --menu "Which Version do you want to install" 20 60 10 \
-      "0" "Homebridge nfarina Version with Homematic Plugin" \
-      "1" "Homebridge thkl Old Homematic Fork" \
-      "2" "Homebridge thkl Old Homematic Fork BETA-Version" \
-      3>&1 1>&2 2>&3)
-      
-    if [ $? -eq 0 ]; then  
+info "Installing Homebridge Node Modules"
+sudo npm install -g homebridge
+sudo npm install -g homebridge-homematic
+mkdir /home/pi/.homebridge
+configfile="/home/pi/.homebridge/config.json"
 
-	  case "${VERSION}" in
-
-         0)
-          info "Installing Homebridge Node Modules"
-		  sudo npm install -g homebridge
-          sudo npm install -g homebridge-homematic
-          mkdir /home/pi/.homebridge
-          configfile="/home/pi/.homebridge/config.json"
-         ;;
-         
-         
-         1)
-          git clone -b master --single-branch https://github.com/thkl/homebridge.git
-          cd homebridge
-          info "Installing Node Modules"
-		  npm install
-         ;;
-      	
-		
-		 2)
-          git clone -b xmlrpc --single-branch https://github.com/thkl/homebridge.git
-          cd homebridge
-          info "Installing Node Modules"
-		  npm install
-		 ;;
-         
-       esac
-
-    fi
-
-
-
-info "Setup"
+info "Setup for Homematic"
 
 hazconfig="$(cat $configfile| grep 'bridge' | wc -l)"
 if [ "$hazconfig" = "0" ]; then
@@ -133,15 +97,8 @@ whiptail --yesno "Would you like to start homebridge at boot by default?" $DEFAU
 RET=$?
 if [ $RET -eq 0 ]; then
 
-  file="/home/pi/.homebridge/config.json"
-  if [ -f "$file" ]
-  then
     wget https://raw.githubusercontent.com/thkl/homebridge/xmlrpc/homebridge
   	sudo mv /home/pi/homebridge /etc/init.d/homebridge
-  	
-  else
-  	sudo cp /home/pi/homebridge/homebridge.txt /etc/init.d/homebridge
-  fi
   	sudo chmod 755 /etc/init.d/homebridge
 	sudo update-rc.d homebridge defaults
 fi
@@ -149,15 +106,10 @@ fi
 echo '127.0.0.1  Homebridge' | sudo tee /etc/hosts
 
 info "Done. If there are no error messages you are done."
+info "Your config.json is here : /home/pi/.homebridge/config.json"
+info "If you want to install more modules use npm install -G MODULENAME"
+info "Available Modules are here https://www.npmjs.com/browse/keyword/homebridge-plugin"
+
 info "Please navigate to https://github.com/nfarina/homebridge for more informations."
+info "Start the Homebridge by typing homebridge"
 
-file="/home/pi/.homebridge/config.json"
-if [ -f "$file" ]
-then
-
-	info "Start the Homebridge by typing homebridge"
-
-else
-	info "Start the Homebridge by typing npm run start"
-
-fi

@@ -1,6 +1,4 @@
 
-[![Slack Status](https://homebridge-slackin.herokuapp.com/badge.svg)](https://homebridge-slackin.herokuapp.com)
-
 # IMPORTANT
 
 Homebridge has recently spun off its included accessories into a new module [homebridge-legacy-plugins](https://github.com/nfarina/homebridge-legacy-plugins) which contains our previous integrations for popular devices like Nest, WeMo, Sonos, Hue, and many more. Please do not open any issues related to specific devices in this repository; go there instead.

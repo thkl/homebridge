@@ -1,3 +1,4 @@
+Homematic Plugin Repository : https://github.com/thkl/homebridge-homematic
 
 # IMPORTANT
 

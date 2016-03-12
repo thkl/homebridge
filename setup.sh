@@ -59,6 +59,7 @@ info "Installing Zeroconf"
 install_package "libavahi-compat-libdnssd-dev"
 install_package "gcc-4.8 g++-4.8"
 install_package "libkrb5-dev"
+install_package "git"
 
 info "Installing node"
 wget https://s3-eu-west-1.amazonaws.com/conoroneill.net/wp-content/uploads/2015/03/node-v0.12.1-linux-arm-pi.tar.gz

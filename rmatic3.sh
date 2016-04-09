@@ -122,21 +122,3 @@ sed -i 's/  PATH=\"\/usr\/local\/sbin:\/usr\/local\/bin:\/usr\/sbin:\/usr\/bin:\
 sed -i 's/      start-stop-daemon -S -q -p \/var\/run\/HMServer.pid --exec java -- -Xmx32m -Dlog4j.configuration=file:\/\/\/etc\/config\/log4j.xml -Dfile.encoding=ISO-8859-1 -jar \/opt\/HMServer\/HMServer.jar \&/      start-stop-daemon -S -q -p \/var\/run\/HMServer.pid --exec \/usr\/bin\/java -- -Xmx32m -Dlog4j.configuration=file:\/\/\/etc\/config\/log4j.xml -Dfile.encoding=ISO-8859-1 -jar \/opt\/HMServer\/HMServer.jar \&/g' /etc/init.d/S61HMServer
 echo 'export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/lib:/usr/local/lib:/opt/hm/lib' >> /etc/profile
 
-#Java installieren
-#--------------------------------------------------
-
-# Download von http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html
-# Linux ARM v6/v7 Hard Float ABI
-# Datein in das /root Verzeichnis des Rasp kopieren
-
-tar zxvf /root/jdk-8u65-linux-arm32-vfp-hflt.tar.gz -C /opt
-ln -s /opt/jdk1.8.0_65 /opt/jre
-update-alternatives --install /usr/bin/javac javac /opt/jre/bin/javac 1
-update-alternatives --install /usr/bin/java java /opt/jre/bin/java 1
-update-alternatives --config javac
-update-alternatives --config java
-
-#OCCU starten
-#--------------------------------------------------
-
-/etc/init.d/occ

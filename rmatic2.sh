@@ -19,7 +19,7 @@ ln -s /usr/local/share/man /usr/local/man
 
 #wget -O RaspberryMatic-2.15.5-3.img.zip "http://update.homematic.com/firmware/download?cmd=download&version=2.15.5&serial=TMP&lang=de&product=HM-IMAGE-RASPBERRYMATIC"
 wget -O /root/RaspberryMatic-2.15.5-3.img.zip "http://update.homematic.com/firmware/download?cmd=download&version=2.15.5&serial=TMP&lang=de&product=HM-IMAGE-RASPBERRYMATIC"
-unzip RaspberryMatic-2.15.5-3.img.zip
+unzip /root/RaspberryMatic-2.15.5-3.img.zip
 # Das entpacken benötigt ca. 10 Minuten, nicht ungeduldig werden
 mkdir /mnt/image
 mount /root/raspberrymatic-2.15.5-3.img /mnt/image -ooffset=$((22528*512))

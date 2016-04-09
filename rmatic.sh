@@ -22,7 +22,8 @@ dpkg-reconfigure locales
 # de_DE.UTF-8 UTF-8 als Haupt locales wählen
 dpkg-reconfigure tzdata
 # Europa -> Berlin
-
+apt-get update -y
+apt-get upgrade -y
 apt-get -q=2 install libatomic1 libdaemon0 curl libpcap0.8 lighttpd iptables ifplugd unzip inetutils-syslogd fdflush setserial i2c-tools msmtp pcregrep rsync rpi-update openvpn tcl udhcpc dma i2c-tools mtd-utils
 rpi-update
 

@@ -29,5 +29,5 @@ rpi-update
 
 # /usr/local muss eine eigene Partition sein, nur dann funktioniert es mit den Backups!
 #Eigene Partition /usr/local erstellen
-echo -e "n\np\n3\n\n+2G\nw" | fdisk /dev/mmcblk0
-reboot
+#echo -e "n\np\n3\n\n+2G\nw" | fdisk /dev/mmcblk0
+#reboot

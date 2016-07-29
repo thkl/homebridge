@@ -34,43 +34,28 @@ install_package() {
 # check architecture
 sudo test "`dpkg --print-architecture`" == "armhf" || die "This Repos is only for armhf."
 
-# set timezone and update system
-info "Setting up locale and keyboard"
-sudo dpkg-reconfigure locales
-
-TIMEZONE="Europe/Berlin"
-echo $TIMEZONE | sudo tee /etc/timezone
-sudo cp /usr/share/zoneinfo/${TIMEZONE} /etc/localtime
-sudo dpkg-reconfigure -f noninteractive tzdata
-
-info "Setting up Hostname"
-echo 'Homebridge' | sudo tee /etc/hostname
-
-info "Cleaning up"
-sudo dpkg --configure -a
-
-info "Update Package Lists this may take some time (10-20 min) depending on your internet connection"
-sudo apt-get update -y
-sudo apt-get dist-upgrade -y
-info "Done"
 
 info "Installing Zeroconf"
 
 install_package "libavahi-compat-libdnssd-dev"
-install_package "gcc-4.8 g++-4.8"
-install_package "libkrb5-dev"
 install_package "git"
+install_package "make"
+
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.7
+
 
 info "Installing node"
-wget https://s3-eu-west-1.amazonaws.com/conoroneill.net/wp-content/uploads/2015/03/node-v0.12.1-linux-arm-pi.tar.gz
-tar -zxvf node-v0.12.1-linux-arm-pi.tar.gz
-cd node-v0.12.1-linux-arm-pi
+wget https://nodejs.org/dist/v4.0.0/node-v4.0.0-linux-armv7l.tar.gz 
+tar -xvf node-v4.0.0-linux-armv7l.tar.gz 
+cd node-v4.0.0-linux-armv7l
 sudo cp -R * /usr/local/
+
 
 cd /home/pi
 info "Cleaning ..."
-rm node-v0.12.1-linux-arm-pi.tar.gz
-rm node-v0.12.1-linux-arm-pi -R
+rm node-v4.0.0-linux-armv7l.tar.gz
+rm node-v4.0.0-linux-armv7l -R
 
 info "Installing Homebridge Node Modules"
 sudo npm install -g homebridge
@@ -118,4 +103,3 @@ info "Available Modules are here https://www.npmjs.com/browse/keyword/homebridge
 
 info "Please navigate to https://github.com/nfarina/homebridge for more informations."
 info "Start the Homebridge by typing homebridge"
-

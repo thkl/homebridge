@@ -34,23 +34,28 @@ install_package() {
 # check architecture
 sudo test "`dpkg --print-architecture`" == "armhf" || die "This Repos is only for armhf."
 
+
 info "Installing Zeroconf"
 
 install_package "libavahi-compat-libdnssd-dev"
-install_package "gcc-4.8 g++-4.8"
-install_package "libkrb5-dev"
 install_package "git"
+install_package "make"
+
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
+sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.7
+
 
 info "Installing node"
-wget https://s3-eu-west-1.amazonaws.com/conoroneill.net/wp-content/uploads/2015/03/node-v0.12.1-linux-arm-pi.tar.gz
-tar -zxvf node-v0.12.1-linux-arm-pi.tar.gz
-cd node-v0.12.1-linux-arm-pi
+wget https://nodejs.org/dist/v4.0.0/node-v4.0.0-linux-armv7l.tar.gz 
+tar -xvf node-v4.0.0-linux-armv7l.tar.gz 
+cd node-v4.0.0-linux-armv7l
 sudo cp -R * /usr/local/
+
 
 cd /home/pi
 info "Cleaning ..."
-rm node-v0.12.1-linux-arm-pi.tar.gz
-rm node-v0.12.1-linux-arm-pi -R
+rm node-v4.0.0-linux-armv7l.tar.gz
+rm node-v4.0.0-linux-armv7l -R
 
 info "Installing Homebridge Node Modules"
 sudo npm install -g homebridge

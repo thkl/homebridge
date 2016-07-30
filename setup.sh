@@ -46,8 +46,8 @@ sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 40 --slave 
 
 
 info "Installing node"
-wget https://nodejs.org/dist/v4.0.0/node-v4.0.0-linux-armv7l.tar.gz 
-tar -xvf node-v4.0.0-linux-armv7l.tar.gz 
+wget -q https://nodejs.org/dist/v4.0.0/node-v4.0.0-linux-armv7l.tar.gz 
+tar -xvf node-v4.0.0-linux-armv7l.tar.gz  >/dev/null
 cd node-v4.0.0-linux-armv7l
 sudo cp -R * /usr/local/
 

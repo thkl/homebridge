@@ -39,23 +39,27 @@ info "Installing Zeroconf"
 
 install_package "libavahi-compat-libdnssd-dev"
 install_package "git"
-install_package "make"
+#install_package "make"
 
-sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
-sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.7
+#sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.9 60 --slave /usr/bin/g++ g++ /usr/bin/g++-4.9
+#sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.7
 
+
+#info "Installing node"
+#wget -q https://nodejs.org/dist/v4.0.0/node-v4.0.0-linux-armv7l.tar.gz 
+#tar -xvf node-v4.0.0-linux-armv7l.tar.gz  >/dev/null
+#cd node-v4.0.0-linux-armv7l
+#sudo cp -R * /usr/local/
+
+
+#cd /home/pi
+#info "Cleaning ..."
+#rm node-v4.0.0-linux-armv7l.tar.gz
+#rm node-v4.0.0-linux-armv7l -R
 
 info "Installing node"
-wget -q https://nodejs.org/dist/v4.0.0/node-v4.0.0-linux-armv7l.tar.gz 
-tar -xvf node-v4.0.0-linux-armv7l.tar.gz  >/dev/null
-cd node-v4.0.0-linux-armv7l
-sudo cp -R * /usr/local/
-
-
-cd /home/pi
-info "Cleaning ..."
-rm node-v4.0.0-linux-armv7l.tar.gz
-rm node-v4.0.0-linux-armv7l -R
+curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+apt-get install -y nodejs >/dev/null
 
 info "Installing Homebridge Node Modules"
 sudo npm install -g homebridge

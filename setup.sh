@@ -59,7 +59,7 @@ install_package "git"
 
 info "Installing node"
 curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
-apt-get install -y nodejs >/dev/null
+sudo apt-get install -y nodejs >/dev/null
 
 info "Installing Homebridge Node Modules"
 sudo npm install -g homebridge

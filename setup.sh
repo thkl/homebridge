@@ -45,21 +45,21 @@ install_package "git"
 #sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 40 --slave /usr/bin/g++ g++ /usr/bin/g++-4.7
 
 
-#info "Installing node"
-#wget -q https://nodejs.org/dist/v4.0.0/node-v4.0.0-linux-armv7l.tar.gz 
-#tar -xvf node-v4.0.0-linux-armv7l.tar.gz  >/dev/null
-#cd node-v4.0.0-linux-armv7l
-#sudo cp -R * /usr/local/
-
-
-#cd /home/pi
-#info "Cleaning ..."
-#rm node-v4.0.0-linux-armv7l.tar.gz
-#rm node-v4.0.0-linux-armv7l -R
-
 info "Installing node"
-curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
-sudo apt-get install -y nodejs >/dev/null
+
+if $(uname -m | grep -Eq ^armv6); then
+ wget -q https://nodejs.org/dist/v4.0.0/node-v4.0.0-linux-armv7l.tar.gz 
+ tar -xvf node-v4.0.0-linux-armv7l.tar.gz  >/dev/null
+ cd node-v4.0.0-linux-armv7l
+ sudo cp -R * /usr/local/
+ cd /home/pi
+ info "Cleaning ..."
+ rm node-v4.0.0-linux-armv7l.tar.gz
+ rm node-v4.0.0-linux-armv7l -R
+else
+ curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
+ sudo apt-get install -y nodejs >/dev/null
+fi
 
 info "Installing Homebridge Node Modules"
 sudo npm install -g homebridge

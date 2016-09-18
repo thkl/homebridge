@@ -10,7 +10,7 @@
 ### END INIT INFO
 
 dir="/home/pi/homebridge"
-cmd="DEBUG=* node app.js"
+cmd="node app.js"
 user="root"
 
 name=`basename $0`

@@ -34,9 +34,10 @@ install_package() {
 # check architecture
 sudo test "`dpkg --print-architecture`" == "armhf" || die "This Repos is only for armhf."
 
+info "Fetching knowledge"
+sudo apt-get update
 
 info "Installing Zeroconf"
-
 install_package "libavahi-compat-libdnssd-dev"
 install_package "git"
 #install_package "make"

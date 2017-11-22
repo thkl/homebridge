@@ -62,8 +62,8 @@ else
 fi
 
 info "Installing Homebridge Node Modules"
-sudo npm install -g homebridge
-sudo npm install -g homebridge-homematic
+sudo npm install -g --unsafe-perm homebridge
+sudo npm install -g --unsafe-perm homebridge-homematic
 mkdir /home/pi/.homebridge
 configfile="/home/pi/.homebridge/config.json"
 
